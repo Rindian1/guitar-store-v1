@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <a href="#" class="home-icon">🏠</a>
+        <div class="search-container">
+            <input type="text" class="search-box" placeholder="Browse">
+        </div>
+        <div class="menu-icon">☰</div>
+    </header>
+
+    <section class="welcome-section">
+        <h1>Welcome &lt;username&gt;!</h1>
+    </section>
+
+    <main class="dashboard">
+        <div class="card">
+            <h2>Shopping list</h2>
+            <div class="card-header">
+                <span>Item</span>
+                <span>Cost</span>
+            </div>
+            <div class="card-content">
+                {% if cart_items and cart_items|length > 0 %}
+                    {% for item in cart_items %}
+                    <div class="item-row">
+                        <span class="item-name">{{ item.name }}</span>
+                        <span>
+                            ${{ '%.2f'|format(item.price or 0) }}
+                            <form style="display:inline" method="post" action="{{ url_for('remove_item', item_id=item.id) }}">
+                                <button type="submit">Remove</button>
+                            </form>
+                        </span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="item-row">
+                        <span class="item-name">No items yet</span>
+                        <span>$0.00</span>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="total-cost">Total: ${{ '%.2f'|format(cart_total or 0) }}</div>
+
+            <form method="post" action="{{ url_for('add_item') }}" style="margin-top: 12px; display: grid; grid-template-columns: 1fr 120px 100px; gap: 8px;">
+                <input type="text" name="name" placeholder="Item name" required>
+                <input type="number" step="0.01" name="price" placeholder="Price" required>
+                <button type="submit">Add</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Recently viewed</h2>
+            <div class="card-header">
+                <span>Item</span>
+                <span>Link</span>
+            </div>
+            <div class="card-content">
+                <div class="item-row">
+                    <span class="item-name">Item name</span>
+                    <a href="#" class="item-link">Item Link</a>
+                </div>
+                <div class="item-row">
+                    <span class="item-name">Item name</span>
+                    <a href="#" class="item-link">Item Link</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Recommended</h2>
+            <div class="card-header">
+                <span>Item</span>
+                <span>Link</span>
+            </div>
+            <div class="card-content">
+                <div class="item-row">
+                    <span class="item-name">Item name</span>
+                    <a href="#" class="item-link">Item Link</a>
+                </div>
+                <div class="item-row">
+                    <span class="item-name">Item name</span>
+                    <a href="#" class="item-link">Item Link</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
