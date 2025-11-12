@@ -10,7 +10,10 @@
     <header>
         <a href="#" class="home-icon">🏠</a>
         <div class="search-container">
-            <input type="text" class="search-box" placeholder="Browse">
+            <form method="get" action="{{ url_for('search') }}" class="search-form">
+                <input type="text" name="q" class="search-input" placeholder="Browse">
+                <button type="submit" class="search-button">Search</button>
+            </form>
         </div>
         <div class="menu-icon">☰</div>
     </header>

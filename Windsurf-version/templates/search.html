@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Products</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <a href="{{ url_for('home') }}" class="home-icon">🏠</a>
+        <div class="search-container">
+            <form method="get" action="{{ url_for('search') }}" class="search-form">
+                <input type="text" name="q" value="{{ search_query }}" placeholder="Search guitars..." class="search-input">
+                <select name="category" class="category-select">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat['category'] }}" {% if selected_category == cat['category'].lower() %}selected{% endif %}>{{ cat['category'] }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="search-button">Search</button>
+            </form>
+        </div>
+        <div class="menu-icon">☰</div>
+    </header>
+
+    <main class="dashboard" style="max-width:1200px;">
+        <div style="grid-column: 1 / -1;">
+            <div class="sort-options">
+                <span>Sort by:</span>
+                <a href="{{ url_for('search', q=search_query, category=selected_category, sort='name', order='asc') }}" class="{% if sort_by == 'name' and sort_order == 'asc' %}active{% endif %}">Name (A-Z)</a>
+                <a href="{{ url_for('search', q=search_query, category=selected_category, sort='price', order='asc') }}" class="{% if sort_by == 'price' and sort_order == 'asc' %}active{% endif %}">Price (Low-High)</a>
+                <a href="{{ url_for('search', q=search_query, category=selected_category, sort='price', order='desc') }}" class="{% if sort_by == 'price' and sort_order == 'desc' %}active{% endif %}">Price (High-Low)</a>
+            </div>
+        </div>
+
+        <div class="products-grid" style="grid-column: 1 / -1;">
+            {% for product in products %}
+            <div class="product-card">
+                <img src="{{ product['image_url'] or url_for('static', filename='images/placeholder.jpg') }}" alt="{{ product['name'] }}" class="product-image">
+                <div class="product-info">
+                    <h3 class="product-name">{{ product['name'] }}</h3>
+                    <p class="product-category">{{ product['category'] }}</p>
+                    <p class="product-price">${{ "%.2f"|format(product['price']) }}</p>
+                    {% if product['stock'] > 0 %}
+                        <p class="in-stock">In Stock ({{ product['stock'] }})</p>
+                        <button class="add-to-cart" data-product-id="{{ product['id'] }}">Add to Cart</button>
+                    {% else %}
+                        <p class="out-of-stock">Out of Stock</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="no-results">
+                <p>No products found. Try adjusting your search.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle "Add to Cart" button clicks
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('add-to-cart')) {
+            const button = e.target;
+            const productId = button.dataset.productId;
+            
+            // Disable the button to prevent multiple clicks
+            button.disabled = true;
+            button.textContent = 'Adding...';
+            
+            // Send the request to add the item to the cart
+            fetch('/add-to-cart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `product_id=${encodeURIComponent(productId)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    button.textContent = 'Added to Cart!';
+                    button.style.backgroundColor = '#4CAF50';
+                    // Optionally, update the cart count in the UI
+                } else {
+                    button.textContent = 'Failed to Add';
+                    button.style.backgroundColor = '#f44336';
+                    console.error('Error:', data.error);
+                    // Re-enable the button on error
+                    setTimeout(() => {
+                        button.disabled = false;
+                        button.textContent = 'Add to Cart';
+                        button.style.backgroundColor = '';
+                    }, 2000);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error); 
+                console.log(error);
+                button.textContent = 'Error';
+                button.style.backgroundColor = '#f44336';
+                setTimeout(() => {
+                    button.disabled = false;
+                    button.textContent = 'Add to Cart';
+                    button.style.backgroundColor = '';
+                }, 2000);
+            });
+        }
+    });
+});
+</script>
+</body>
+</html>

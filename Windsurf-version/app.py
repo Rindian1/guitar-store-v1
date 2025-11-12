@@ -3,7 +3,8 @@ from flask import render_template
 from flask import request, redirect, url_for
 import sqlite3
 import os
-from flask import g
+from flask import g 
+from flask import jsonify
 
 app = Flask(__name__)
 
@@ -34,11 +35,71 @@ def init_db():
         )
         """
     )
+    # Products table for search
+    db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS products (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            category TEXT NOT NULL,
+            price REAL NOT NULL,
+            description TEXT,
+            image_url TEXT,
+            stock INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
     db.commit()
+
+def seed_products():
+    """Seed sample products if products table is empty."""
+    db = get_db()
+    count = db.execute('SELECT COUNT(*) AS c FROM products').fetchone()['c']
+    if count == 0:
+        db.executemany(
+            'INSERT INTO products (name, category, price, description, image_url, stock) VALUES (?, ?, ?, ?, ?, ?)',
+            [
+                (
+                    'Fender Stratocaster',
+                    'Electric',
+                    799.99,
+                    'Classic electric guitar with versatile tone',
+                    None,
+                    10,
+                ),
+                (
+                    'Gibson Les Paul',
+                    'Electric',
+                    1299.99,
+                    'Iconic solid-body electric guitar',
+                    None,
+                    5,
+                ),
+                (
+                    'Martin D-28',
+                    'Acoustic',
+                    2499.99,
+                    'Premium acoustic guitar with rich tone',
+                    None,
+                    8,
+                ),
+                (
+                    'Fender Precision Bass',
+                    'Bass',
+                    899.99,
+                    'Legendary bass guitar',
+                    None,
+                    7,
+                ),
+            ],
+        )
+        db.commit()
 
 @app.before_request
 def setup():
     init_db()
+    seed_products()
 
 # --- Routes ---
 @app.route('/')
@@ -76,6 +137,67 @@ def remove_item(item_id: int):
     db.execute('DELETE FROM cart_items WHERE id = ?', (item_id,))
     db.commit()
     return redirect(url_for('home'))
+
+@app.route('/search')
+def search():
+    query = (request.args.get('q') or '').strip()
+    category = (request.args.get('category') or '').strip().lower()
+
+    db = get_db()
+    sql = 'SELECT * FROM products WHERE 1=1'
+    params = []
+
+    if query:
+        sql += ' AND (LOWER(name) LIKE ? OR LOWER(description) LIKE ?)'
+        term = f"%{query.lower()}%"
+        params.extend([term, term])
+
+    if category:
+        sql += ' AND LOWER(category) = ?'
+        params.append(category)
+
+    sort_by = request.args.get('sort', 'name')
+    sort_order = request.args.get('order', 'asc')
+    valid_sort_columns = ['name', 'price', 'created_at']
+    if sort_by not in valid_sort_columns:
+        sort_by = 'name'
+    if sort_order.lower() not in ['asc', 'desc']:
+        sort_order = 'asc'
+    sql += f' ORDER BY {sort_by} {sort_order.upper()}'
+
+    products = db.execute(sql, params).fetchall()
+    categories = db.execute('SELECT DISTINCT category FROM products').fetchall()
+
+    return render_template(
+        'search.html',
+        products=products,
+        search_query=query,
+        selected_category=category,
+        categories=categories,
+        sort_by=sort_by,
+        sort_order=sort_order,
+    ) 
+@app.route('/add-to-cart', methods=['POST'])
+def add_to_cart():
+    product_id = request.form.get('product_id')
+    if not product_id:
+        return jsonify({'success': False, 'error': 'Product ID is required'}), 400
+
+    db = get_db()
+    try:
+        # Fetch the product details
+        product = db.execute('SELECT name, price FROM products WHERE id = ?', (product_id,)).fetchone()
+        if not product:
+            return jsonify({'success': False, 'error': 'Product not found'}), 404
+
+        # Add to cart
+        db.execute('INSERT INTO cart_items (name, price) VALUES (?, ?)', 
+                  (product['name'], product['price']))
+        db.commit()
+        return jsonify({'success': True, 'message': 'Added to cart'})
+    except Exception as e:
+        db.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
