@@ -162,7 +162,7 @@
 
 .search-button {
     padding: 10px 20px;
-    background-color: #e67e50;
+    background-color: #b5603c;
     color: white;
     border: none;
     border-radius: 4px;
@@ -171,7 +171,7 @@
 }
 
 .search-button:hover {
-    background-color: #d86f45c6;
+    background-color: #a94923c6;
 }
 
 .sort-options {
