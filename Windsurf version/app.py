@@ -6,15 +6,18 @@ import os
 from flask import g 
 from flask import jsonify
 
-app = Flask(__name__)
+app = Flask(__name__, instance_relative_config=True)
 
 # --- Database helpers ---
-DB_PATH = os.path.join(app.root_path, 'cart.db')
+# Ensure instance directory exists and place DB there (writable locally and in many hosts)
+os.makedirs(app.instance_path, exist_ok=True)
+import os
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cart.db')
 
 def get_db():
     db = getattr(g, '_db', None)
     if db is None:
-        db = g._db = sqlite3.connect(DB_PATH)
+        db = g._db = sqlite3.connect(DB_PATH, check_same_thread=False)
         db.row_factory = sqlite3.Row
     return db
 
