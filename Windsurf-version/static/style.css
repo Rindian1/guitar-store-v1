@@ -139,6 +139,14 @@
         }
 
 /* --- Search Page Styles --- */
+.clickable-card {
+    cursor: pointer;
+}
+
+.clickable-card:hover {
+    box-shadow: 0 5px 15px rgba(205, 205, 205, 0.574); 
+    background-color: #efefef8e;
+}
 .search-form {
     display: flex;
     gap: 10px;

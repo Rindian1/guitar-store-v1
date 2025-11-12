@@ -176,7 +176,15 @@ def search():
         categories=categories,
         sort_by=sort_by,
         sort_order=sort_order,
-    ) 
+    )
+
+@app.route('/shopping-cart')
+def shopping_cart():
+    db = get_db()
+    items = db.execute('SELECT id, name, price FROM cart_items ORDER BY id DESC').fetchall()
+    total = sum((row['price'] or 0) for row in items)
+    return render_template('shopping_cart.html', cart_items=items, cart_total=total)
+
 @app.route('/add-to-cart', methods=['POST'])
 def add_to_cart():
     product_id = request.form.get('product_id')
