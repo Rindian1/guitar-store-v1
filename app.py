@@ -9,10 +9,15 @@ from flask import jsonify
 app = Flask(__name__, instance_relative_config=True)
 
 # --- Database helpers ---
-# Ensure instance directory exists and place DB there (writable locally and in many hosts)
-os.makedirs(app.instance_path, exist_ok=True)
+# Use instance folder for database (works regardless of parent folder name)
 import os
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cart.db')
+
+# Ensure instance directory exists
+os.makedirs(app.instance_path, exist_ok=True)
+
+# Database will be stored in instance/cart.db
+DB_PATH = os.path.join(app.instance_path, 'cart.db')
+print(f"Using database at: {DB_PATH}")  # Helpful for debugging
 
 def get_db():
     db = getattr(g, '_db', None)
@@ -28,32 +33,45 @@ def close_db(exception):
         db.close()
 
 def init_db():
-    db = get_db()
-    db.execute(
-        """
-        CREATE TABLE IF NOT EXISTS cart_items (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            price REAL NOT NULL DEFAULT 0
+    try:
+        print(f"Initializing database at: {DB_PATH}")
+        db = get_db()
+        
+        # Enable foreign key support
+        db.execute('PRAGMA foreign_keys = ON')
+        
+        # Create tables with error handling
+        db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS cart_items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                price REAL NOT NULL DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """
         )
-        """
-    )
-    # Products table for search
-    db.execute(
-        """
-        CREATE TABLE IF NOT EXISTS products (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            category TEXT NOT NULL,
-            price REAL NOT NULL,
-            description TEXT,
-            image_url TEXT,
-            stock INTEGER DEFAULT 0,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        
+        db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS products (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                category TEXT NOT NULL,
+                price REAL NOT NULL,
+                description TEXT,
+                image_url TEXT,
+                product_url TEXT,
+                stock INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """
         )
-        """
-    )
-    db.commit()
+        db.commit()
+        print("Database initialized successfully")
+    except sqlite3.Error as e:
+        print(f"Error initializing database: {e}")
+        raise
 
 def seed_products():
     """Seed sample products if products table is empty."""
@@ -61,7 +79,7 @@ def seed_products():
     count = db.execute('SELECT COUNT(*) AS c FROM products').fetchone()['c']
     if count == 0:
         db.executemany(
-            'INSERT INTO products (name, category, price, description, image_url, stock) VALUES (?, ?, ?, ?, ?, ?)',
+            'INSERT INTO products (name, category, price, description, image_url, product_url, stock) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [
                 (
                     'Fender Stratocaster',
@@ -69,6 +87,7 @@ def seed_products():
                     799.99,
                     'Classic electric guitar with versatile tone',
                     None,
+                    'https://www.fender.com/start',
                     10,
                 ),
                 (
@@ -77,6 +96,7 @@ def seed_products():
                     1299.99,
                     'Iconic solid-body electric guitar',
                     None,
+                    'https://www.gibson.com/',
                     5,
                 ),
                 (
@@ -85,6 +105,7 @@ def seed_products():
                     2499.99,
                     'Premium acoustic guitar with rich tone',
                     None,
+                    'https://www.martinguitar.com/',
                     8,
                 ),
                 (
@@ -93,6 +114,7 @@ def seed_products():
                     899.99,
                     'Legendary bass guitar',
                     None,
+                    'https://www.fender.com/start',
                     7,
                 ),
             ],
