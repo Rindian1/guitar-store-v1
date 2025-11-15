@@ -37,7 +37,7 @@
         <div class="products-grid" style="grid-column: 1 / -1;">
             {% for product in products %}
             <div class="product-card">
-                <a href="{{ product['product_url'] }}" target="_blank" class="product-link">
+                <a href="{{ url_for('product_detail', product_id=product['id']) }}" class="product-link">
                     <img src="{{ product['image_url'] or url_for('static', filename='images/placeholder.jpg') }}" alt="{{ product['name'] }}" class="product-image">
                     <div class="product-info">
                         <h3 class="product-name">{{ product['name'] }}</h3>
