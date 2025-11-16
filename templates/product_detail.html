@@ -8,7 +8,13 @@
 </head>
 <body>
 <header>
-    <a href="{{ url_for('home') }}" class="home-icon">🏠</a>
+    <a href="{{ url_for('home') }}" class="home-icon">🏠</a> 
+    <div class="search-container">
+        <form method="get" action="{{ url_for('search') }}" class="search-form">
+            <input type="text" name="q" class="search-input" placeholder="Search guitars... (eg. Fender Stratocaster)">
+            <button type="submit" class="search-button">Search</button>
+        </form>
+    </div>
     <div class="menu-icon">☰</div>
 </header>
 
@@ -40,42 +46,6 @@
             </div>
         </div>
     </div>
-
-    {% if youtube_videos %}
-    <section style="grid-column: 1 / -1; margin-top: 32px;">
-        <h2 style="margin-bottom: 20px; font-size: 1.5rem;">Product Demos</h2>
-        <div class="video-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; margin-top: 16px;">
-            {% for video in youtube_videos %}
-            <div class="video-card" style="background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                <div class="video-container" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
-                    <iframe 
-                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"
-                        src="https://www.youtube.com/embed/{{ video.url.split('v=')[-1] }}" 
-                        title="{{ video.title }}"
-                        frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowfullscreen>
-                    </iframe>
-                </div>
-                <div class="video-info" style="padding: 16px;">
-                    <h3 style="margin: 0 0 8px 0; font-size: 1rem; line-height: 1.4;">
-                        <a href="{{ video.url }}" target="_blank" style="color: #1a1a1a; text-decoration: none;">
-                            {{ video.title }}
-                        </a>
-                    </h3>
-                    <div style="display: flex; justify-content: space-between; color: #666; font-size: 0.85rem;">
-                        <span>{{ video.channel }}</span>
-                        <span>{{ video.duration }}</span>
-                    </div>
-                    <div style="color: #666; font-size: 0.8rem; margin-top: 4px;">
-                        {{ "{:,}".format(video.views) }} views • {{ video.published }}
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </section>
-    {% endif %}
 </main>
 </body>
 </html>

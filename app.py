@@ -199,8 +199,6 @@ def search():
         sort_order=sort_order,
     )
 
-import json
-
 @app.route('/product/<int:product_id>')
 def product_detail(product_id: int):
     db = get_db()
@@ -213,125 +211,10 @@ def product_detail(product_id: int):
         ' This is a detailed overview of the instrument, its tone, build, and typical use cases.'
     )
 
-    # Get YouTube videos from the database
-    youtube_videos = []
-    if 'youtube_links' in product and product['youtube_links']:
-        try:
-            print("\n" + "="*50)
-            print(f"DEBUG: Processing product {product_id}")
-            
-            # Get the raw data
-            raw_links = product['youtube_links']
-            print(f"Raw data type: {type(raw_links)}")
-            print(f"Raw data length: {len(str(raw_links))} characters")
-            print(f"First 200 chars: {str(raw_links)[:200]}")
-            
-            # Try to parse the JSON data
-            if isinstance(raw_links, str):
-                try:
-                    # First try direct JSON parse
-                    youtube_videos = json.loads(raw_links)
-                    print("Successfully parsed JSON directly")
-                except json.JSONDecodeError as e1:
-                    print(f"Direct JSON parse failed: {e1}")
-                    try:
-                        # Try fixing common JSON issues
-                        fixed_json = raw_links.replace("'", '"')
-                        youtube_videos = json.loads(fixed_json)
-                        print("Successfully parsed JSON after fixing quotes")
-                    except json.JSONDecodeError as e2:
-                        print(f"Fixed JSON parse failed: {e2}")
-                        # Try to extract URLs using regex as a last resort
-                        print("Attempting to extract URLs with regex...")
-                        import re
-                        url_matches = re.findall(r'"url"\s*:\s*"(https?://[^"]+)"', raw_links)
-                        title_matches = re.findall(r'"title"\s*:\s*"([^"]+)"', raw_links)
-                        
-                        youtube_videos = []
-                        for i, (url, title) in enumerate(zip(url_matches, title_matches)):
-                            if i >= 3:  # Limit to 3 videos
-                                break
-                            youtube_videos.append({
-                                'title': title,
-                                'url': url,
-                                'channel': 'Unknown Channel',
-                                'duration': 'N/A',
-                                'published': 'N/A',
-                                'views': 0
-                            })
-                        print(f"Extracted {len(youtube_videos)} videos using regex")
-            
-            # If we have a single video (dict), convert to list
-            if isinstance(youtube_videos, dict):
-                youtube_videos = [youtube_videos]
-            
-            # Process the videos
-            if not isinstance(youtube_videos, list):
-                print(f"ERROR: Expected list but got {type(youtube_videos)}")
-                youtube_videos = []
-            else:
-                processed_videos = []
-                for i, video in enumerate(youtube_videos[:3]):  # Limit to 3 videos
-                    if not isinstance(video, dict):
-                        print(f"Skipping invalid video entry at index {i}: {video}")
-                        continue
-                    
-                    # Clean and validate video data
-                    video_url = str(video.get('url', '')).strip()
-                    if not video_url.startswith(('http://', 'https://')):
-                        print(f"Skipping invalid URL: {video_url}")
-                        continue
-                    
-                    video_data = {
-                        'title': str(video.get('title', f'Video {i+1}')).strip(),
-                        'url': video_url,
-                        'channel': str(video.get('channel', 'Unknown Channel')).strip(),
-                        'duration': str(video.get('duration', 'N/A')).strip(),
-                        'published': str(video.get('published', 'N/A')).strip(),
-                        'views': int(video.get('views', 0)) if str(video.get('views', '0')).isdigit() else 0
-                    }
-                    processed_videos.append(video_data)
-                
-                youtube_videos = processed_videos
-            
-            print(f"Successfully processed {len(youtube_videos)} videos")
-            for i, video in enumerate(youtube_videos, 1):
-                print(f"  Video {i}: {video.get('title')}")
-                print(f"    URL: {video.get('url')}")
-            
-        except Exception as e:
-            print(f"CRITICAL ERROR processing YouTube links: {str(e)}")
-            import traceback
-            traceback.print_exc()
-            youtube_videos = []
-    
-    print("="*50 + "\n")
-    
-    # Debug output
-    print(f"Product ID: {product_id}")
-    print(f"YouTube links found: {len(youtube_videos)}")
-    for i, video in enumerate(youtube_videos, 1):
-        print(f"  Video {i}: {video.get('title', 'No title')} - {video.get('url', 'No URL')}")
-        print(f"     Channel: {video.get('channel', 'N/A')}")
-        print(f"     Duration: {video.get('duration', 'N/A')}")
-        print(f"     Published: {video.get('published', 'N/A')}")
-        print(f"     Views: {video.get('views', 'N/A')}")
-    
-    # For backward compatibility, keep the sound_tests variable
-    sound_tests = [
-        {
-            'title': video.get('title', 'Sound Demo'),
-            'url': video.get('url', '#')
-        }
-        for video in youtube_videos
-    ]
-
     return render_template(
         'product_detail.html',
         product=product,
-        detailed_description=detailed_description,
-        sound_tests=sound_tests,
-        youtube_videos=youtube_videos,
+        detailed_description=detailed_description
     )
 
 @app.route('/shopping-cart')
