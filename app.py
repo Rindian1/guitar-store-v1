@@ -6,6 +6,7 @@ import sqlite3
 import os
 from flask import g 
 from flask import jsonify
+import json
 
 app = Flask(__name__, instance_relative_config=True)
 
@@ -210,11 +211,20 @@ def product_detail(product_id: int):
         (product['description'] or 'No description available.') +
         ' This is a detailed overview of the instrument, its tone, build, and typical use cases.'
     )
+    
+    # Get YouTube links if they exist
+    youtube_links = []
+    if 'youtube_links' in product.keys() and product['youtube_links']:
+        try:
+            youtube_links = json.loads(product['youtube_links'])
+        except (json.JSONDecodeError, TypeError):
+            youtube_links = []
 
     return render_template(
         'product_detail.html',
         product=product,
-        detailed_description=detailed_description
+        detailed_description=detailed_description,
+        youtube_links=youtube_links
     )
 
 @app.route('/shopping-cart')
