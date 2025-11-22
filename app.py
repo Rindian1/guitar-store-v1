@@ -49,10 +49,18 @@ def init_db():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
                 price REAL NOT NULL DEFAULT 0,
+                product_id INTEGER,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             """
         )
+
+        # Add product_id column if it doesn't exist (for existing databases)
+        cursor = db.cursor()
+        cursor.execute("PRAGMA table_info(cart_items)")
+        columns = [col[1] for col in cursor.fetchall()]
+        if 'product_id' not in columns:
+            cursor.execute('ALTER TABLE cart_items ADD COLUMN product_id INTEGER')
         
         db.execute(
             """
@@ -149,7 +157,7 @@ def add_item():
         price = 0.0
     if name:
         db = get_db()
-        db.execute('INSERT INTO cart_items (name, price) VALUES (?, ?)', (name, price))
+        db.execute('INSERT INTO cart_items (name, price, product_id) VALUES (?, ?, NULL)', (name, price))
         db.commit()
     return redirect(url_for('home'))
 
@@ -211,7 +219,10 @@ def product_detail(product_id: int):
         (product['description'] or 'No description available.') +
         ' This is a detailed overview of the instrument, its tone, build, and typical use cases.'
     )
-    
+
+    # Check if product is already in cart
+    in_cart = db.execute('SELECT COUNT(*) AS count FROM cart_items WHERE name = ?', (product['name'],)).fetchone()['count'] > 0
+
     # Get YouTube links if they exist
     youtube_links = []
     if 'youtube_links' in product.keys() and product['youtube_links']:
@@ -224,7 +235,8 @@ def product_detail(product_id: int):
         'product_detail.html',
         product=product,
         detailed_description=detailed_description,
-        youtube_links=youtube_links
+        youtube_links=youtube_links,
+        in_cart=in_cart
     )
 
 @app.route('/shopping-cart')

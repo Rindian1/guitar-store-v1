@@ -34,7 +34,11 @@
                 <form method="post" action="{{ url_for('add_to_cart') }}">
                     <input type="hidden" name="product_id" value="{{ product['id'] }}">
                     {% if product['stock'] > 0 %}
-                    <button type="submit" class="add-to-cart">Add to cart</button>
+                        {% if in_cart %}
+                        <button type="button" class="add-to-cart in-cart" disabled>In Cart</button>
+                        {% else %}
+                        <button type="submit" class="add-to-cart">Add to cart</button>
+                        {% endif %}
                     {% else %}
                     <button type="button" class="add-to-cart" disabled>Out of stock</button>
                     {% endif %}
@@ -92,35 +96,103 @@
         .video-grid {
             grid-template-columns: 1fr !important;
         }
-        
+
         .product-detail {
             grid-template-columns: 1fr !important;
         }
     }
-    
+
     .video-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
     }
-    
+
     .video-card h3 {
         transition: color 0.2s;
     }
-    
+
     .video-card:hover h3 {
         color: #1a73e8;
+    }
+
+    .in-cart {
+        background-color: #f44336 !important;
+        color: white !important;
+        cursor: not-allowed !important;
     }
 </style>
 
 <script>
     // Log YouTube links to console if they exist
     const youtubeLinks = {{ youtube_links|tojson|safe }};
-    
+
     if (youtubeLinks && youtubeLinks.length > 0) {
         console.log('YouTube links for this product:', youtubeLinks);
-    } else { 
+    } else {
         console.log('No YouTube links found for this product');
     }
+
+    // Handle add to cart form submission
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form[action*="add-to-cart"]');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault(); // Prevent form submission
+
+                const button = form.querySelector('button[type="submit"]');
+                const productId = form.querySelector('input[name="product_id"]').value;
+
+                // Disable the button to prevent multiple clicks
+                button.disabled = true;
+                button.textContent = 'Adding...';
+
+                // Send the request to add the item to the cart
+                fetch('/add-to-cart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `product_id=${encodeURIComponent(productId)}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        button.textContent = 'In Cart';
+                        button.classList.add('in-cart');
+                        button.disabled = true;
+                        button.type = 'button'; // Change to button to prevent further submissions
+                    } else {
+                        if (data.error === 'Product already in cart') {
+                            button.textContent = 'In Cart';
+                            button.classList.add('in-cart');
+                            button.disabled = true;
+                            button.type = 'button';
+                        } else {
+                            button.textContent = 'Failed to Add';
+                            button.style.backgroundColor = '#f44336';
+                            console.error('Error:', data.error);
+                            // Re-enable the button on error
+                            setTimeout(() => {
+                                button.disabled = false;
+                                button.textContent = 'Add to Cart';
+                                button.style.backgroundColor = '';
+                            }, 2000);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    button.textContent = 'Error';
+                    button.style.backgroundColor = '#f44336';
+                    setTimeout(() => {
+                        button.disabled = false;
+                        button.textContent = 'Add to Cart';
+                        button.style.backgroundColor = '';
+                    }, 2000);
+                });
+            });
+        }
+    });
 </script>
 </body>
 </html>
