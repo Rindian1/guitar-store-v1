@@ -3,52 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title> 
+    <title>Shopping Cart</title> 
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head> 
 
 <body>
     <header>
-        <a href="{{ url_for('index') }}" class="home-icon">🏠</a>
+        <a href="{{ url_for('index') }}" class="home-icon" aria-label="Home">🏠</a>
         <div class="search-container">
-            <form method="get" action="{{ url_for('search') }}" class="search-form">
-                <input type="text" name="q" class="search-input" placeholder="Browse">
-                <button type="submit" class="search-button">Search</button>
+            <form method="get" action="{{ url_for('search') }}" class="search-form" role="search" aria-label="Site Search">
+                <input type="search" name="q" class="search-input" placeholder="Browse" aria-label="Search products" />
+                <button type="submit" class="search-button btn btn-primary">Search</button>
             </form>
         </div>
-        <div class="menu-icon">☰</div>
-    </header> 
-    <main class = "dashboard">  
-        <section class = "shopping-title"> 
-            <h1>Shopping Cart</h1>
-        </section> 
-        <section class = "shopping-content">
-                {% if cart_items and cart_items|length > 0 %}
+        <div class="menu-icon" role="button" tabindex="0" aria-label="Menu">☰</div>
+    </header>
+
+    <main class="cart-main" role="main" aria-label="Shopping Cart Main Content">
+        <h1 class="cart-title">Shopping Cart</h1>
+
+        {% if cart_items and cart_items|length > 0 %}
+            <div class="cart-container">
+                <!-- Left side: Cart items -->
+                <div class="cart-items-section" role="list" aria-label="Shopping Cart Items List">
                     {% for item in cart_items %}
-                    <div class="item-row">
-                        <span class="item-name">{{ item.name }}</span>
-                        <span>
-                            ${{ '%.2f'|format(item.price or 0) }}
-                            <form style="display:inline" method="post" action="{{ url_for('remove_item', item_id=item.id) }}">
-                                <button type="submit">Remove</button>
-                            </form>
-                        </span>
-                    </div>
+                        <div class="cart-item-card" role="listitem" aria-label="Cart item {{ item.name }}">
+                            <div class="cart-item-left">
+                                <div class="cart-item-image">
+                                    <img src="{{ url_for('static', filename='images/placeholder.png') }}" alt="{{ item.name }}" />
+                                </div>
+                                <div class="cart-item-info">
+                                    <h3 class="cart-item-name">{{ item.name }}</h3>
+                                    <form method="post" action="{{ url_for('remove_item', item_id=item.id) }}" class="remove-form" onsubmit="return confirm('Are you sure you want to remove this item?');">
+                                        <button type="submit" class="btn-remove-inline" aria-label="Remove {{ item.name }} from cart">
+                                            Remove
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="cart-item-price">
+                                ${{ '%.2f'|format(item.price or 0) }}
+                            </div>
+                        </div>
                     {% endfor %}
-                {% else %}
-                    <div class="item-row">
-                        <span class="item-name">No items yet</span>
-                        <span>$0.00</span>
+
+                    <!-- Total Price Row -->
+                    <div class="cart-total-row">
+                        <span class="total-label">Total Price:</span>
+                        <span class="total-amount">${{ '%.2f'|format(cart_total or 0) }}</span>
                     </div>
-                {% endif %}
-        </section>
-    
-    <div class="total-cost">Total: ${{ '%.2f'|format(cart_total or 0) }}</div> 
-        <form method="post" action="{{ url_for('add_item') }}" style="margin-top: 12px; display: grid; grid-template-columns: 1fr 120px 100px; gap: 8px;">
-                <input type="text" name="name" placeholder="Item name" required>
-                <input type="number" step="0.01" name="price" placeholder="Price" required>
-                <button type="submit">Add</button>
-        </form> 
-    </main> 
+                </div>
+
+                <!-- Right side: Summary/Actions -->
+                <aside class="cart-sidebar" aria-label="Cart Actions" role="complementary">
+                    <div class="sidebar-content">
+                        <div class="sidebar-total">
+                            <span class="sidebar-total-label">Subtotal</span>
+                            <span class="sidebar-total-amount">${{ '%.2f'|format(cart_total or 0) }}</span>
+                        </div>
+                        
+                        <div class="sidebar-actions">
+                            <button class="btn btn-checkout-full" disabled aria-disabled="true" title="Checkout coming soon">
+                                Proceed to Checkout
+                            </button>
+                            <a href="{{ url_for('search') }}" class="btn btn-continue-shopping" role="button">
+                                Continue Shopping
+                            </a>
+                        </div>
+
+                        <!-- Add Item Form in Sidebar -->
+                    </div>
+                </aside>
+            </div>
+        {% else %}
+            <section class="empty-cart-message" role="region" aria-live="polite" aria-label="Empty Cart Message">
+                <div class="empty-cart-icon">🛒</div>
+                <p>Your cart is currently empty.</p>
+                <a href="{{ url_for('index') }}" class="btn btn-start-shopping" role="button">
+                    Start Shopping
+                </a>
+            </section>
+        {% endif %}
+    </main>
 </body>
 </html>
