@@ -36,7 +36,7 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; padding: 40px;">
             <div class="product-gallery" style="position: relative;">
                 <div style="background: #f9f9f9; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-                    <img src="{{ product['image_url'] or url_for('static', filename='images/placeholder.jpg') }}" 
+                    <img src="{{ product['image_url'] or url_for('static', filename='Images/FILLER.png') }}" 
                          alt="{{ product['name'] }}" 
                          style="width: 100%; height: auto; display: block; aspect-ratio: 1/1; object-fit: contain; padding: 20px;">
                 </div>
@@ -240,9 +240,26 @@
     }
 </style>
 
+<!-- Store YouTube links as data attribute -->
+<div id="youtube-data" data-youtube-links="{{ youtube_links|tojson|safe }}" style="display: none;"></div>
+
 <script>
     // Log YouTube links to console if they exist
-    const youtubeLinks = {{ youtube_links|tojson|safe }};
+    let youtubeLinks = [];
+    
+    // Safely parse YouTube links from data attribute
+    try {
+        const youtubeDataElement = document.getElementById('youtube-data');
+        if (youtubeDataElement) {
+            const youtubeData = youtubeDataElement.getAttribute('data-youtube-links');
+            if (youtubeData && youtubeData !== 'null' && youtubeData !== '[]') {
+                youtubeLinks = JSON.parse(youtubeData);
+            }
+        }
+    } catch (e) {
+        console.log('Error parsing YouTube links:', e);
+        youtubeLinks = [];
+    }
 
     if (youtubeLinks && Array.isArray(youtubeLinks) && youtubeLinks.length > 0) {
         console.log('YouTube links for this product:', youtubeLinks);

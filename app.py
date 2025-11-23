@@ -151,7 +151,7 @@ def seed_products():
                     'Electric',
                     799.99,
                     'Classic electric guitar with versatile tone',
-                    None,
+                    '/static/Images/Fender Stratocaster.jpeg',
                     10,
                 ),
                 (
@@ -159,7 +159,7 @@ def seed_products():
                     'Electric',
                     1299.99,
                     'Iconic solid-body electric guitar',
-                    None,
+                    '/static/Images/Gibson les paul.webp',
                     5,
                 ),
                 (
@@ -167,7 +167,7 @@ def seed_products():
                     'Acoustic',
                     2499.99,
                     'Premium acoustic guitar with rich tone',
-                    None,
+                    '/static/Images/Martin D-28.jpeg',
                     8,
                 ),
                 (
@@ -175,17 +175,166 @@ def seed_products():
                     'Bass',
                     899.99,
                     'Legendary bass guitar',
-                    None,
+                    '/static/Images/fender precision bass.jpeg',
+                    7,
+                ),
+                (
+                    'Fender Telecaster',
+                    'Electric',
+                    849.99,
+                    'Classic country and rock guitar',
+                    '/static/Images/Fender telecaster.png',
+                    6,
+                ),
+                (
+                    'Gibson SG Standard',
+                    'Electric',
+                    1199.99,
+                    'Rock and blues powerhouse',
+                    '/static/Images/Gibson SG Standard.png',
+                    4,
+                ),
+                (
+                    'PRS Custom 24',
+                    'Electric',
+                    3499.99,
+                    'Premium American-made electric guitar',
+                    '/static/Images/PRS Custom 24.png',
+                    3,
+                ),
+                (
+                    'Taylor 814ce',
+                    'Acoustic',
+                    2899.99,
+                    'Premium acoustic-electric guitar',
+                    '/static/Images/Taylor 814ce.jpeg',
+                    5,
+                ),
+                (
+                    'Yamaha FG800',
+                    'Acoustic',
+                    299.99,
+                    'Affordable beginner acoustic guitar',
+                    '/static/Images/Yamaha FG800.jpeg',
+                    15,
+                ),
+                (
+                    'Fender Deluxe Reverb',
+                    'Amplifier',
+                    999.99,
+                    'Classic tube amplifier',
+                    '/static/Images/Fender Deluxe Reverb.jpg',
+                    4,
+                ),
+                (
+                    'Marshall DSL40CR',
+                    'Amplifier',
+                    699.99,
+                    'British rock amplifier',
+                    '/static/Images/Marshall DSL40CR.jpeg',
+                    6,
+                ),
+                (
+                    'Boss Katana-50',
+                    'Amplifier',
+                    229.99,
+                    'Versatile modeling amplifier',
+                    '/static/Images/Boss Katana-50.jpeg',
+                    8,
+                ),
+                (
+                    'Boss DS-1 Distortion',
+                    'Effects',
+                    49.99,
+                    'Classic distortion pedal',
+                    '/static/Images/Boss DS-1 Distortion.jpg',
+                    20,
+                ),
+                (
+                    'Ibanez TS9 Tube Screamer',
+                    'Effects',
+                    89.99,
+                    'Legendary overdrive pedal',
+                    '/static/Images/Ibanez TS9 Tube Screamer.jpg',
+                    12,
+                ),
+                (
+                    'Electro-Harmonix Small Clone',
+                    'Effects',
+                    79.99,
+                    'Classic analog chorus pedal',
+                    '/static/Images/Electro-Harmonix Small Clone.jpg',
+                    10,
+                ),
+                (
+                    'Strymon BigSky Reverb',
+                    'Effects',
+                    479.99,
+                    'Premium reverb pedal',
+                    '/static/Images/Strymon BigSky Reverb.avif',
+                    3,
+                ),
+                (
+                    'TC Electronic Ditto Looper',
+                    'Effects',
+                    129.99,
+                    'Simple loop pedal',
+                    '/static/Images/TC Electronic Ditto Looper.jpeg',
                     7,
                 ),
             ],
         )
         db.commit()
 
+def update_product_images():
+    """Update existing products with appropriate images."""
+    db = get_db()
+    
+    # Update all 24 products with specific images
+    product_image_mapping = {
+        1: '/static/Images/Fender Stratocaster.jpeg',      # Fender Stratocaster
+        2: '/static/Images/Gibson les paul.webp',         # Gibson Les Paul
+        3: '/static/Images/Martin D-28.jpeg',             # Martin D-28
+        4: '/static/Images/fender precision bass.jpeg',   # Fender Precision Bass
+        5: '/static/Images/Fender telecaster.png',        # Fender Telecaster
+        6: '/static/Images/Taylor 814ce.jpeg',            # Taylor 814ce
+        7: '/static/Images/PRS Custom 24.png',            # PRS Custom 24
+        8: '/static/Images/Gibson SG Standard.png',       # Gibson SG Standard
+        9: '/static/Images/Yamaha FG800.jpeg',            # Yamaha FG800
+        10: '/static/Images/Boss DS-1 Distortion.jpg',    # Boss DS-1 Distortion
+        11: '/static/Images/Strymon BigSky Reverb.avif',  # Strymon BigSky Reverb
+        12: '/static/Images/Ibanez TS9 Tube Screamer.jpg', # Ibanez TS9 Tube Screamer
+        13: '/static/Images/TC Electronic Ditto Looper.jpeg', # TC Electronic Ditto Looper
+        14: '/static/Images/Electro-Harmonix Small Clone.jpg', # Electro-Harmonix Small Clone
+        15: '/static/Images/Fender Deluxe Reverb.jpg',    # Fender Deluxe Reverb
+        16: '/static/Images/Marshall DSL40CR.jpeg',       # Marshall DSL40CR
+        17: '/static/Images/Boss Katana-50.jpeg',         # Boss Katana-50
+        18: '/static/Images/Dunlop Tortex Picks (1.0mm).jpg', # Dunlop Tortex Picks
+        19: '/static/Images/DAddario EXL110 Strings.webp',   # DAddario EXL110 Strings
+        20: '/static/Images/Planet Waves Cable 10ft.webp',   # Planet Waves Cable 10ft
+        21: '/static/Images/Snark SN-5X Tuner.png',          # Snark SN-5X Tuner
+        22: '/static/Images/Fender Deluxe Molded Case.webp',  # Fender Deluxe Molded Case
+        23: '/static/Images/Gator GC-LTD Gig Bag.jpg',        # Gator GC-LTD Gig Bag
+        24: '/static/Images/Mono M80 Electric Case.webp',     # Mono M80 Electric Case
+    }
+    
+    # Update all products with their specific images
+    for product_id, image_url in product_image_mapping.items():
+        db.execute('UPDATE products SET image_url = ? WHERE id = ?', (image_url, product_id))
+    
+    # Set filler image for any new products that might be added in the future
+    db.execute(
+        'UPDATE products SET image_url = ? WHERE image_url IS NULL OR image_url = ""',
+        ('/static/Images/FILLER.png',)
+    )
+    
+    db.commit()
+
 @app.before_request
 def setup():
     init_db()
     seed_products()
+    update_product_images()
 
 # --- Routes ---
 @app.route('/')
