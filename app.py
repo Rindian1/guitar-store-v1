@@ -103,6 +103,19 @@ def init_db():
             )
             """
         )
+        
+        db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS recently_viewed (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                product_id INTEGER NOT NULL,
+                viewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id),
+                FOREIGN KEY (product_id) REFERENCES products(id)
+            )
+            """
+        )
         db.commit()
         print("Database initialized successfully")
     except sqlite3.Error as e:
@@ -180,10 +193,20 @@ def home():
     db = get_db()
     if current_user.is_authenticated:
         items = db.execute('SELECT id, name, price FROM cart_items WHERE user_id = ? ORDER BY id DESC', (current_user.id,)).fetchall()
+        # Get recently viewed products for this user
+        recently_viewed = db.execute('''
+            SELECT p.id, p.name, p.price 
+            FROM recently_viewed rv
+            JOIN products p ON rv.product_id = p.id
+            WHERE rv.user_id = ?
+            ORDER BY rv.viewed_at DESC
+            LIMIT 5
+        ''', (current_user.id,)).fetchall()
     else:
         items = []  # No cart items for non-authenticated users
+        recently_viewed = []  # No recently viewed for non-authenticated users
     total = sum((row['price'] or 0) for row in items)
-    return render_template('index.html', cart_items=items, cart_total=total)
+    return render_template('index.html', cart_items=items, cart_total=total, recently_viewed=recently_viewed)
 
 @app.route('/page-2.html')
 def page2():
@@ -262,6 +285,25 @@ def product_detail(product_id: int):
     product = db.execute('SELECT * FROM products WHERE id = ?', (product_id,)).fetchone()
     if not product:
         abort(404)
+
+    # Track recently viewed product if user is authenticated
+    if current_user.is_authenticated:
+        # Check if product is already in recently viewed for this user
+        existing = db.execute('SELECT id FROM recently_viewed WHERE user_id = ? AND product_id = ?', 
+                            (current_user.id, product_id)).fetchone()
+        if existing:
+            # Update the timestamp
+            db.execute('UPDATE recently_viewed SET viewed_at = CURRENT_TIMESTAMP WHERE id = ?', 
+                      (existing['id'],))
+        else:
+            # Add to recently viewed
+            db.execute('INSERT INTO recently_viewed (user_id, product_id) VALUES (?, ?)', 
+                      (current_user.id, product_id))
+        
+        # Keep only the 5 most recent items for this user
+        db.execute('DELETE FROM recently_viewed WHERE user_id = ? AND id NOT IN (SELECT id FROM recently_viewed WHERE user_id = ? ORDER BY viewed_at DESC LIMIT 5)', 
+                  (current_user.id, current_user.id))
+        db.commit()
 
     detailed_description = (
         (product['description'] or 'No description available.') +
@@ -414,4 +456,4 @@ def profile():
     return render_template('profile.html')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5002, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)

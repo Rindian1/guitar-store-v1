@@ -15,7 +15,20 @@
             <button type="submit" class="search-button">Search</button>
         </form>
     </div>
-    <div class="menu-icon">☰</div>
+    {% if current_user.is_authenticated %}
+        <div class="user-menu">
+            <span class="welcome-user">Welcome, {{ current_user.username }}!</span>
+            <a href="{{ url_for('profile') }}" class="profile-link">Profile</a>
+            <form method="post" action="{{ url_for('logout') }}" class="logout-form-inline">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </div>
+    {% else %}
+        <div class="auth-menu">
+            <a href="{{ url_for('login') }}" class="auth-link login-link">Login</a>
+            <a href="{{ url_for('register') }}" class="auth-link register-link">Register</a>
+        </div>
+    {% endif %}
 </header>
 
 <main class="dashboard" style="max-width: 1200px; margin: 0 auto; padding: 0 20px 60px;">
@@ -121,7 +134,7 @@
                     </div>
                 </div>
                 <div class="video-details" style="padding: 16px 8px 8px;">
-                    <h3 style="margin: 0 0 6px 0; font-size: 1.05rem; line-height: 1.4; color: #222; font-weight: 600; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.8rem;">
+                    <h3 style="margin: 0 0 6px 0; font-size: 1.05rem; line-height: 1.4; color: #222; font-weight: 600; display: -webkit-box; display: box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; box-orient: vertical; overflow: hidden; min-height: 2.8rem;">
                         {{ video.title }}
                     </h3>
                     <div style="font-size: 0.9rem; color: #666; margin-bottom: 4px; font-weight: 500;">
@@ -231,7 +244,7 @@
     // Log YouTube links to console if they exist
     const youtubeLinks = {{ youtube_links|tojson|safe }};
 
-    if (youtubeLinks && youtubeLinks.length > 0) {
+    if (youtubeLinks && Array.isArray(youtubeLinks) && youtubeLinks.length > 0) {
         console.log('YouTube links for this product:', youtubeLinks);
     } else {
         console.log('No YouTube links found for this product');

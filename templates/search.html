@@ -21,7 +21,20 @@
                 <button type="submit" class="search-button">Search</button>
             </form>
         </div>
-        <div class="menu-icon">☰</div>
+        {% if current_user.is_authenticated %}
+            <div class="user-menu">
+                <span class="welcome-user">Welcome, {{ current_user.username }}!</span>
+                <a href="{{ url_for('profile') }}" class="profile-link">Profile</a>
+                <form method="post" action="{{ url_for('logout') }}" class="logout-form-inline">
+                    <button type="submit" class="logout-btn">Logout</button>
+                </form>
+            </div>
+        {% else %}
+            <div class="auth-menu">
+                <a href="{{ url_for('login') }}" class="auth-link login-link">Login</a>
+                <a href="{{ url_for('register') }}" class="auth-link register-link">Register</a>
+            </div>
+        {% endif %}
     </header>
 
     <main class="dashboard" style="max-width: 1400px; margin: 0 auto; padding: 0 20px 60px;">

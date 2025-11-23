@@ -53,13 +53,13 @@ header {
   color: white;
   text-decoration: none;
   padding: 8px 12px;
-  background-color: #d86f45;
+  background-color: #f4a3a9;
   border-radius: 4px;
   transition: background-color 0.2s;
 }
 
 .profile-link:hover {
-  background-color: #c55f35;
+  background-color: #f64754;
 }
 
 .logout-form-inline {
@@ -67,7 +67,7 @@ header {
 }
 
 .logout-btn {
-  background-color: #d86f45;
+  background-color: #f4a3a9;
   color: white;
   border: none;
   padding: 8px 12px;
@@ -77,7 +77,39 @@ header {
 }
 
 .logout-btn:hover {
+  background-color: #f64754;
+}
+
+.auth-menu {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.auth-link {
+  color: white;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  font-weight: 500;
+}
+
+.login-link {
+  background-color: #d86f45;
+}
+
+.login-link:hover {
   background-color: #c55f35;
+}
+
+.register-link {
+  background-color: #667eea;
+}
+
+.register-link:hover {
+  background-color: #5a6fd8;
 }
 
 .search-container {
@@ -1032,6 +1064,26 @@ button {
 
 .logout-form {
   display: inline;
+}
+
+/* Recently Viewed Row Hover Effects */
+.item-row {
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.item-row:hover {
+    background-color: #f8f9fa;
+    transform: translateX(2px);
+}
+
+.item-row:hover .item-name {
+    color: #b7374a;
+    font-weight: 500;
+}
+
+.item-row:hover .item-link {
+    color: #b7374a;
+    text-decoration: underline;
 }
 
 /* Responsive Design for Auth Pages */
