@@ -16,7 +16,13 @@
                 <button type="submit" class="search-button btn btn-primary">Search</button>
             </form>
         </div>
-        <div class="menu-icon" role="button" tabindex="0" aria-label="Menu">☰</div>
+        <div class="user-menu">
+            <span class="welcome-user">Welcome, {{ current_user.username }}!</span>
+            <a href="{{ url_for('profile') }}" class="profile-link">Profile</a>
+            <form method="post" action="{{ url_for('logout') }}" class="logout-form-inline">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </div>
     </header>
 
     <main class="cart-main" role="main" aria-label="Shopping Cart Main Content">

@@ -19,38 +19,49 @@
     </header>
 
     <section class="welcome-section">
-        <h1>Welcome &lt;username&gt;!</h1>
+        {% if current_user.is_authenticated %}
+            <h1>Welcome {{ current_user.username }}!</h1>
+        {% else %}
+            <h1>Welcome to Guitar Store!</h1>
+            <p><a href="{{ url_for('login') }}">Login</a> or <a href="{{ url_for('register') }}">Register</a> to create your shopping list</p>
+        {% endif %}
     </section>
 
     <main class="dashboard">
-        <div class="card clickable-card" data-href="{{ url_for('shopping_cart') }}">
+        <div class="card {% if current_user.is_authenticated %}clickable-card{% endif %}" {% if current_user.is_authenticated %}data-href="{{ url_for('shopping_cart') }}"{% endif %}>
             <h2>Shopping list</h2>
             <div class="card-header">
                 <span>Item</span>
                 <span>Cost</span>
             </div>
             <div class="card-content">
-                {% if cart_items and cart_items|length > 0 %}
-                    {% for item in cart_items %}
-                    <div class="item-row">
-                        <span class="item-name">{{ item.name }}</span>
-                        <span>
-                            ${{ '%.2f'|format(item.price or 0) }}
-                            <form style="display:inline" method="post" action="{{ url_for('remove_item', item_id=item.id) }}">
-                                <button type="submit">Remove</button>
-                            </form>
-                        </span>
-                    </div>
-                    {% endfor %}
+                {% if current_user.is_authenticated %}
+                    {% if cart_items and cart_items|length > 0 %}
+                        {% for item in cart_items %}
+                        <div class="item-row">
+                            <span class="item-name">{{ item.name }}</span>
+                            <span>
+                                ${{ '%.2f'|format(item.price or 0) }}
+                                <form style="display:inline" method="post" action="{{ url_for('remove_item', item_id=item.id) }}">
+                                    <button type="submit">Remove</button>
+                                </form>
+                            </span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="item-row">
+                            <span class="item-name">No items yet</span>
+                            <span>$0.00</span>
+                        </div>
+                    {% endif %}
                 {% else %}
                     <div class="item-row">
-                        <span class="item-name">No items yet</span>
-                        <span>$0.00</span>
+                        <span class="item-name">Please login to view your shopping list</span>
+                        <span><a href="{{ url_for('login') }}">Login</a></span>
                     </div>
                 {% endif %}
             </div>
             <div class="total-cost">Total: ${{ '%.2f'|format(cart_total or 0) }}</div>
-
         </div>
 
         <div class="card">
