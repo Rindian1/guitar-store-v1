@@ -24,6 +24,10 @@
         {% if current_user.is_authenticated %}
             <div class="user-menu">
                 <span class="welcome-user">Welcome, {{ current_user.username }}!</span>
+                <a href="{{ url_for('shopping_cart') }}" class="cart-button" aria-label="Shopping Cart">
+                    🛒 Cart
+                    <span class="cart-count">{{ cart_items|length }}</span>
+                </a>
                 <a href="{{ url_for('profile') }}" class="profile-link">Profile</a>
                 <form method="post" action="{{ url_for('logout') }}" class="logout-form-inline">
                     <button type="submit" class="logout-btn">Logout</button>
@@ -81,11 +85,11 @@
                         <p class="in-stock" style="margin: 0 0 12px 0; color: #2e7d32; font-size: 0.9rem; font-weight: 500;">
                             In Stock ({{ product['stock'] }})
                         </p>
-                        <button class="add-to-cart" 
-                                data-product-id="{{ product['id'] }}"
-                                style="width: 100%; padding: 12px; background: linear-gradient(45deg, #f67280, #f79489); color: white; border: none; border-radius: 30px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
-                            Add to Cart
-                        </button>
+                        <a href="{{ url_for('product_detail', product_id=product['id']) }}" 
+                           class="view-details-btn"
+                           style="display: inline-block; width: 100%; padding: 12px; background: linear-gradient(45deg, #f67280, #f79489); color: white; text-decoration: none; border-radius: 30px; font-weight: 600; text-align: center; transition: all 0.3s ease;">
+                            View Details
+                        </a>
                     {% else %}
                         <p class="out-of-stock" style="margin: 0; color: #d32f2f; font-weight: 500; text-align: center; padding: 12px 0;">
                             Out of Stock
@@ -101,58 +105,5 @@
             {% endfor %}
         </div>
     </main>
-    <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Handle "Add to Cart" button clicks
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('add-to-cart')) {
-            const button = e.target;
-            const productId = button.dataset.productId;
-            
-            // Disable the button to prevent multiple clicks
-            button.disabled = true;
-            button.textContent = 'Adding...';
-            
-            // Send the request to add the item to the cart
-            fetch('/add-to-cart', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `product_id=${encodeURIComponent(productId)}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    button.textContent = 'Added to Cart!';
-                    button.style.backgroundColor = '#4CAF50';
-                    // Optionally, update the cart count in the UI
-                } else {
-                    button.textContent = 'Failed to Add';
-                    button.style.backgroundColor = '#f44336';
-                    console.error('Error:', data.error);
-                    // Re-enable the button on error
-                    setTimeout(() => {
-                        button.disabled = false;
-                        button.textContent = 'Add to Cart';
-                        button.style.backgroundColor = '';
-                    }, 2000);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error); 
-                console.log(error);
-                button.textContent = 'Error';
-                button.style.backgroundColor = '#f44336';
-                setTimeout(() => {
-                    button.disabled = false;
-                    button.textContent = 'Add to Cart';
-                    button.style.backgroundColor = '';
-                }, 2000);
-            });
-        }
-    });
-});
-</script>
-</body>
+    </body>
 </html>

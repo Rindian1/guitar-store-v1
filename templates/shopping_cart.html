@@ -18,6 +18,12 @@
         </div>
         <div class="user-menu">
             <span class="welcome-user">Welcome, {{ current_user.username }}!</span>
+            <a href="{{ url_for('shopping_cart') }}" class="cart-button active" aria-label="Shopping Cart">
+                🛒 Cart
+                {% if cart_items and cart_items|length > 0 %}
+                    <span class="cart-count">{{ cart_items|length }}</span>
+                {% endif %}
+            </a>
             <a href="{{ url_for('profile') }}" class="profile-link">Profile</a>
             <form method="post" action="{{ url_for('logout') }}" class="logout-form-inline">
                 <button type="submit" class="logout-btn">Logout</button>

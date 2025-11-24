@@ -38,6 +38,13 @@ def get_db():
         db.row_factory = sqlite3.Row
     return db
 
+def get_cart_items():
+    """Helper function to get cart items for the current user"""
+    if not current_user.is_authenticated:
+        return []
+    db = get_db()
+    return db.execute('SELECT id, name, price FROM cart_items WHERE user_id = ? ORDER BY id DESC', (current_user.id,)).fetchall()
+
 @app.teardown_appcontext
 def close_db(exception):
     db = getattr(g, '_db', None)
@@ -417,15 +424,27 @@ def search():
 
     products = db.execute(sql, params).fetchall()
     categories = db.execute('SELECT DISTINCT category FROM products').fetchall()
+    cart_items = get_cart_items()
+
+    # Check cart status for each product
+    products_with_cart_status = []
+    for product in products:
+        product_dict = dict(product)
+        product_dict['in_cart'] = False
+        if current_user.is_authenticated:
+            product_dict['in_cart'] = db.execute('SELECT COUNT(*) AS count FROM cart_items WHERE name = ? AND user_id = ?', 
+                                                (product['name'], current_user.id)).fetchone()['count'] > 0
+        products_with_cart_status.append(product_dict)
 
     return render_template(
         'search.html',
-        products=products,
+        products=products_with_cart_status,
         search_query=query,
         selected_category=category,
         categories=categories,
         sort_by=sort_by,
         sort_order=sort_order,
+        cart_items=cart_items,
     )
 
 @app.route('/product/<int:product_id>')
@@ -473,12 +492,15 @@ def product_detail(product_id: int):
         except (json.JSONDecodeError, TypeError):
             youtube_links = []
 
+    cart_items = get_cart_items()
+
     return render_template(
         'product_detail.html',
         product=product,
         detailed_description=detailed_description,
         youtube_links=youtube_links,
-        in_cart=in_cart
+        in_cart=in_cart,
+        cart_items=cart_items,
     )
 
 @app.route('/shopping-cart')
@@ -625,7 +647,8 @@ def logout():
 @app.route('/profile')
 @login_required
 def profile():
-    return render_template('profile.html')
+    cart_items = get_cart_items()
+    return render_template('profile.html', cart_items=cart_items)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
