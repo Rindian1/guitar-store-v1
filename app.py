@@ -57,8 +57,8 @@ def init_db():
             """
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT UNIQUE NOT NULL,
-                email TEXT UNIQUE NOT NULL,
+                username TEXT NOT NULL UNIQUE,
+                email TEXT NOT NULL UNIQUE,
                 password_hash TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 last_login TIMESTAMP
@@ -485,7 +485,13 @@ def product_detail(product_id: int):
 @login_required
 def shopping_cart():
     db = get_db()
-    items = db.execute('SELECT id, name, price FROM cart_items WHERE user_id = ? ORDER BY id DESC', (current_user.id,)).fetchall()
+    items = db.execute('''
+        SELECT ci.id, ci.name, ci.price, p.image_url 
+        FROM cart_items ci
+        LEFT JOIN products p ON ci.product_id = p.id
+        WHERE ci.user_id = ? 
+        ORDER BY ci.id DESC
+    ''', (current_user.id,)).fetchall()
     total = sum((row['price'] or 0) for row in items)
     return render_template('shopping_cart.html', cart_items=items, cart_total=total)
 
@@ -515,53 +521,70 @@ def add_to_cart():
 # --- Authentication Routes ---
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == 'GET':
-        return render_template('register.html')
-    
-    username = request.form.get('username', '').strip()
-    email = request.form.get('email', '').strip()
-    password = request.form.get('password', '')
-    confirm_password = request.form.get('confirm_password', '')
-    
-    errors = []
-    
-    # Validation
-    if not username or len(username) < 3:
-        errors.append('Username must be at least 3 characters long')
-    if not email:
-        errors.append('Email is required')
-    else:
-        try:
-            validate_email(email)
-        except EmailNotValidError:
+    if request.method == 'POST':
+        username = request.form['username'].strip()
+        email = request.form['email'].strip()
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
+        
+        errors = []
+        
+        # Validate username
+        if not username:
+            errors.append('Username is required')
+        elif len(username) < 3:
+            errors.append('Username must be at least 3 characters long')
+        elif len(username) > 15:
+            errors.append('Username must be no more than 15 characters long')
+        elif not username.replace('_', '').replace('-', '').isalnum():
+            errors.append('Username can only contain letters, numbers, underscores, and hyphens')
+        
+        # Validate email
+        if not email:
+            errors.append('Email is required')
+        elif not validate_email(email):
             errors.append('Please enter a valid email address')
-    if not password or len(password) < 6:
-        errors.append('Password must be at least 6 characters long')
-    if password != confirm_password:
-        errors.append('Passwords do not match')
+        
+        # Validate password
+        if not password:
+            errors.append('Password is required')
+        elif len(password) < 6:
+            errors.append('Password must be at least 6 characters long')
+        
+        # Validate password confirmation
+        if password != confirm_password:
+            errors.append('Passwords do not match')
+        
+        # Check if username already exists
+        if username and len(username) >= 3 and len(username) <= 15:
+            db = get_db()
+            existing_user = db.execute('SELECT id FROM users WHERE username = ?', (username,)).fetchone()
+            if existing_user:
+                errors.append('Username already exists')
+        
+        # Check if email already exists
+        if email and validate_email(email):
+            db = get_db()
+            existing_email = db.execute('SELECT id FROM users WHERE email = ?', (email,)).fetchone()
+            if existing_email:
+                errors.append('Email already registered')
+        
+        if errors:
+            return render_template('register.html', errors=errors, username=username, email=email)
+        
+        # Create new user
+        db = get_db()
+        password_hash = generate_password_hash(password)
+        db.execute(
+            'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
+            (username, email, password_hash)
+        )
+        db.commit()
+        
+        flask('Registration successful! Please log in.')
+        return redirect(url_for('login'))
     
-    if errors:
-        return render_template('register.html', errors=errors, username=username, email=email)
-    
-    db = get_db()
-    
-    # Check if username or email already exists
-    existing_user = db.execute('SELECT id FROM users WHERE username = ? OR email = ?', (username, email)).fetchone()
-    if existing_user:
-        errors.append('Username or email already exists')
-        return render_template('register.html', errors=errors, username=username, email=email)
-    
-    # Create new user
-    password_hash = generate_password_hash(password)
-    db.execute('INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)', 
-              (username, email, password_hash))
-    db.commit()
-    
-    # Log the user in
-    user = db.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
-    login_user(User(user['id'], user['username'], user['email'], user['password_hash']))
-    
-    return redirect(url_for('home'))
+    return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

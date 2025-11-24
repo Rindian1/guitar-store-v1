@@ -36,7 +36,7 @@
                         <div class="cart-item-card" role="listitem" aria-label="Cart item {{ item.name }}">
                             <div class="cart-item-left">
                                 <div class="cart-item-image">
-                                    <img src="{{ url_for('static', filename='images/placeholder.png') }}" alt="{{ item.name }}" />
+                                    <img src="{{ item.image_url or url_for('static', filename='Images/FILLER.png') }}" alt="{{ item.name }}" />
                                 </div>
                                 <div class="cart-item-info">
                                     <h3 class="cart-item-name">{{ item.name }}</h3>
