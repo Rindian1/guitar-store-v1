@@ -95,6 +95,8 @@ def init_db():
             cursor.execute('ALTER TABLE cart_items ADD COLUMN user_id INTEGER')
         if 'product_id' not in columns:
             cursor.execute('ALTER TABLE cart_items ADD COLUMN product_id INTEGER')
+        if 'quantity' not in columns:
+            cursor.execute('ALTER TABLE cart_items ADD COLUMN quantity INTEGER DEFAULT 1')
         
         db.execute(
             """
@@ -508,34 +510,115 @@ def product_detail(product_id: int):
 def shopping_cart():
     db = get_db()
     items = db.execute('''
-        SELECT ci.id, ci.name, ci.price, p.image_url 
+        SELECT ci.id, ci.name, ci.price, ci.quantity, p.image_url 
         FROM cart_items ci
         LEFT JOIN products p ON ci.product_id = p.id
         WHERE ci.user_id = ? 
         ORDER BY ci.id DESC
     ''', (current_user.id,)).fetchall()
-    total = sum((row['price'] or 0) for row in items)
+    total = sum((row['price'] or 0) * (row['quantity'] or 1) for row in items)
     return render_template('shopping_cart.html', cart_items=items, cart_total=total)
+
+@app.route('/update-cart-quantity', methods=['POST'])
+@login_required
+def update_cart_quantity():
+    item_id = request.form.get('item_id')
+    quantity = request.form.get('quantity')
+    
+    if not item_id or not quantity:
+        return jsonify({'success': False, 'error': 'Item ID and quantity are required'}), 400
+    
+    try:
+        quantity = int(quantity)
+        if quantity < 1:
+            return jsonify({'success': False, 'error': 'Quantity must be at least 1'}), 400
+    except (ValueError, TypeError):
+        return jsonify({'success': False, 'error': 'Invalid quantity'}), 400
+    
+    db = get_db()
+    try:
+        # Get the cart item and product to check stock
+        item = db.execute('''
+            SELECT ci.quantity, p.stock, p.price 
+            FROM cart_items ci
+            LEFT JOIN products p ON ci.product_id = p.id
+            WHERE ci.id = ? AND ci.user_id = ?
+        ''', (item_id, current_user.id)).fetchone()
+        
+        if not item:
+            return jsonify({'success': False, 'error': 'Item not found'}), 404
+        
+        # Check stock availability
+        if item['stock'] > 0 and quantity <= item['stock']:
+            db.execute('UPDATE cart_items SET quantity = ? WHERE id = ? AND user_id = ?', 
+                      (quantity, item_id, current_user.id))
+            db.commit()
+            
+            # Calculate new item total and cart total
+            new_item_total = (item['price'] or 0) * quantity
+            all_items = db.execute('SELECT price, quantity FROM cart_items WHERE user_id = ?', 
+                                  (current_user.id,)).fetchall()
+            new_cart_total = sum((row['price'] or 0) * (row['quantity'] or 1) for row in all_items)
+            
+            return jsonify({
+                'success': True, 
+                'message': 'Quantity updated',
+                'new_item_total': new_item_total,
+                'new_cart_total': new_cart_total
+            })
+        else:
+            return jsonify({'success': False, 'error': 'Insufficient stock available'}), 400
+            
+    except Exception as e:
+        db.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/add-to-cart', methods=['POST'])
 @login_required
 def add_to_cart():
     product_id = request.form.get('product_id')
+    quantity = request.form.get('quantity', 1)
+    try:
+        quantity = int(quantity)
+        if quantity < 1:
+            quantity = 1
+    except (ValueError, TypeError):
+        quantity = 1
+    
     if not product_id:
         return jsonify({'success': False, 'error': 'Product ID is required'}), 400
 
     db = get_db()
     try:
         # Fetch the product details
-        product = db.execute('SELECT name, price FROM products WHERE id = ?', (product_id,)).fetchone()
+        product = db.execute('SELECT name, price, stock FROM products WHERE id = ?', (product_id,)).fetchone()
         if not product:
             return jsonify({'success': False, 'error': 'Product not found'}), 404
-
-        # Add to cart with user_id
-        db.execute('INSERT INTO cart_items (name, price, user_id) VALUES (?, ?, ?)', 
-                  (product['name'], product['price'], current_user.id))
-        db.commit()
-        return jsonify({'success': True, 'message': 'Added to cart'})
+        
+        # Check if item already exists in cart
+        existing_item = db.execute('SELECT id, quantity FROM cart_items WHERE product_id = ? AND user_id = ?', 
+                                  (product_id, current_user.id)).fetchone()
+        
+        if existing_item:
+            # Update quantity of existing item
+            new_quantity = existing_item['quantity'] + quantity
+            # Check stock availability
+            if product['stock'] > 0 and new_quantity <= product['stock']:
+                db.execute('UPDATE cart_items SET quantity = ? WHERE id = ?', (new_quantity, existing_item['id']))
+                db.commit()
+                return jsonify({'success': True, 'message': 'Quantity updated in cart', 'quantity': new_quantity})
+            else:
+                return jsonify({'success': False, 'error': 'Insufficient stock available'}), 400
+        else:
+            # Add new item to cart
+            if product['stock'] > 0 and quantity <= product['stock']:
+                db.execute('INSERT INTO cart_items (name, price, user_id, product_id, quantity) VALUES (?, ?, ?, ?, ?)', 
+                          (product['name'], product['price'], current_user.id, product_id, quantity))
+                db.commit()
+                return jsonify({'success': True, 'message': 'Added to cart', 'quantity': quantity})
+            else:
+                return jsonify({'success': False, 'error': 'Insufficient stock available'}), 400
+                
     except Exception as e:
         db.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500

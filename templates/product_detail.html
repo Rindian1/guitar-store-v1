@@ -39,7 +39,7 @@
 
 <main class="dashboard" style="max-width: 1200px; margin: 0 auto; padding: 0 20px 60px;">
     <div class="product-detail" style="grid-column: 1 / -1; background: white; border-radius: 16px; box-shadow: 0 8px 20px rgba(196, 63, 86, 0.12); overflow: hidden;">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; padding: 40px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; padding: 20px;">
             <div class="product-gallery" style="position: relative;">
                 <div style="background: #f9f9f9; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
                     <img src="{{ product['image_url'] or url_for('static', filename='Images/FILLER.png') }}" 
@@ -77,16 +77,14 @@
                     
                     <form method="post" action="{{ url_for('add_to_cart') }}" style="margin-top: 32px;">
                         <input type="hidden" name="product_id" value="{{ product['id'] }}">
+                        <input type="hidden" name="quantity" value="1">
                         {% if product['stock'] > 0 %}
-                            {% if in_cart %}
-                            <button type="button" class="add-to-cart in-cart" disabled style="width: 100%; padding: 16px; font-size: 1.1rem; font-weight: 600; border: none; border-radius: 30px; background: linear-gradient(45deg, #f67280, #f79489); color: white; cursor: not-allowed; transition: all 0.3s ease;">
-                                ✓ Added to Cart
-                            </button>
-                            {% else %}
+                            <p style="font-size: 0.9rem; color: #666; margin-bottom: 20px; font-style: italic;">
+                                💡 To change quantity, go to your shopping cart after adding this item
+                            </p>
                             <button type="submit" class="add-to-cart" style="width: 100%; padding: 16px; font-size: 1.1rem; font-weight: 600; border: none; border-radius: 30px; background: linear-gradient(45deg, #f67280, #f79489); color: white; cursor: pointer; transition: all 0.3s ease;">
                                 Add to Cart - ${{ '%.2f'|format(product['price']) }}
                             </button>
-                            {% endif %}
                         {% else %}
                         <button type="button" class="add-to-cart" disabled style="width: 100%; padding: 16px; font-size: 1.1rem; font-weight: 600; border: none; border-radius: 30px; background: #e0e0e0; color: #9e9e9e; cursor: not-allowed;">
                             Out of Stock
@@ -248,10 +246,16 @@
 
 <!-- Store YouTube links as data attribute -->
 <div id="youtube-data" data-youtube-links="{{ youtube_links|tojson|safe }}" style="display: none;"></div>
+<!-- Store product price as data attribute -->
+<div id="product-data" data-price="{{ '%.2f'|format(product['price']) }}" style="display: none;"></div>
 
 <script>
     // Log YouTube links to console if they exist
     let youtubeLinks = [];
+    
+    // Get product price from data attribute
+    const productData = document.getElementById('product-data');
+    const productPrice = parseFloat(productData.getAttribute('data-price'));
     
     // Safely parse YouTube links from data attribute
     try {
@@ -293,32 +297,29 @@
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: `product_id=${encodeURIComponent(productId)}`
+                    body: `product_id=${encodeURIComponent(productId)}&quantity=1`
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        button.textContent = 'In Cart';
-                        button.classList.add('in-cart');
-                        button.disabled = true;
-                        button.type = 'button'; // Change to button to prevent further submissions
+                        button.textContent = 'Added to cart!';
+                        button.style.background = 'linear-gradient(45deg, #4CAF50, #66BB6A)';
+                        // Reset button after 2 seconds
+                        setTimeout(() => {
+                            button.disabled = false;
+                            button.textContent = 'Add to Cart - $' + productPrice.toFixed(2);
+                            button.style.background = '';
+                        }, 2000);
                     } else {
-                        if (data.error === 'Product already in cart') {
-                            button.textContent = 'In Cart';
-                            button.classList.add('in-cart');
-                            button.disabled = true;
-                            button.type = 'button';
-                        } else {
-                            button.textContent = 'Failed to Add';
-                            button.style.backgroundColor = '#f44336';
-                            console.error('Error:', data.error);
-                            // Re-enable the button on error
-                            setTimeout(() => {
-                                button.disabled = false;
-                                button.textContent = 'Add to Cart';
-                                button.style.backgroundColor = '';
-                            }, 2000);
-                        }
+                        button.textContent = data.error || 'Failed to Add';
+                        button.style.backgroundColor = '#f44336';
+                        console.error('Error:', data.error);
+                        // Re-enable the button on error
+                        setTimeout(() => {
+                            button.disabled = false;
+                            button.textContent = 'Add to Cart - $' + productPrice.toFixed(2);
+                            button.style.backgroundColor = '';
+                        }, 2000);
                     }
                 })
                 .catch(error => {
@@ -327,7 +328,7 @@
                     button.style.backgroundColor = '#f44336';
                     setTimeout(() => {
                         button.disabled = false;
-                        button.textContent = 'Add to Cart';
+                        button.textContent = 'Add to Cart - $' + productPrice.toFixed(2);
                         button.style.backgroundColor = '';
                     }, 2000);
                 });
