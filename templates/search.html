@@ -107,5 +107,9 @@
             {% endfor %}
         </div>
     </main>
+    
+    <!-- Chat Widget -->
+    {% include 'chat_widget.html' %}
+    <script src="{{ url_for('static', filename='chat.js') }}"></script>
     </body>
 </html>

@@ -1,6 +1,6 @@
 from flask import Flask
 from flask import render_template
-from flask import request, redirect, url_for
+from flask import request, redirect, url_for, session
 from flask import abort
 import sqlite3
 import os
@@ -10,15 +10,32 @@ import json
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from email_validator import validate_email, EmailNotValidError
+import google.generativeai as genai
+import uuid
+from datetime import datetime
+import secrets
 
 app = Flask(__name__, instance_relative_config=True)
 app.secret_key = 'your-secret-key-change-in-production'
+
+# Initialize Gemini AI
+GEMINI_API_KEY = "AIzaSyA3gj2D_d1tJDmCSxYqZ0EiSxLtA6OJN4I"
+genai.configure(api_key=GEMINI_API_KEY)
+gemini_model = genai.GenerativeModel('gemini-2.5-flash')
 
 # Initialize Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 login_manager.login_message = 'Please log in to access this page.'
+
+# CSRF Token helper
+def csrf_token():
+    if '_csrf_token' not in session:
+        session['_csrf_token'] = secrets.token_hex(16)
+    return session['_csrf_token']
+
+app.jinja_env.globals['csrf_token'] = csrf_token
 
 # --- Database helpers ---
 # Use instance folder for database (works regardless of parent folder name)
@@ -44,6 +61,58 @@ def get_cart_items():
         return []
     db = get_db()
     return db.execute('SELECT id, name, price FROM cart_items WHERE user_id = ? ORDER BY id DESC', (current_user.id,)).fetchall()
+
+def get_products_for_ai():
+    """Get all products formatted for AI context"""
+    db = get_db()
+    products = db.execute('SELECT id, name, category, price, description, stock FROM products WHERE stock > 0').fetchall()
+    product_list = []
+    for product in products:
+        product_list.append({
+            'id': product['id'],
+            'name': product['name'],
+            'category': product['category'],
+            'price': product['price'],
+            'description': product['description'],
+            'stock': product['stock']
+        })
+    return product_list
+
+def get_or_create_conversation():
+    """Get existing conversation or create new one"""
+    if not current_user.is_authenticated:
+        return None
+    
+    db = get_db()
+    # For simplicity, create a new conversation each session
+    # In production, you might want to continue recent conversations
+    session_id = str(uuid.uuid4())
+    db.execute('INSERT INTO chat_conversations (user_id, session_id) VALUES (?, ?)', 
+              (current_user.id, session_id))
+    db.commit()
+    
+    conversation = db.execute('SELECT id FROM chat_conversations WHERE session_id = ?', 
+                            (session_id,)).fetchone()
+    return conversation['id'] if conversation else None
+
+def save_message(conversation_id, role, content):
+    """Save chat message to database"""
+    db = get_db()
+    db.execute('INSERT INTO chat_messages (conversation_id, role, content) VALUES (?, ?, ?)', 
+              (conversation_id, role, content))
+    db.commit()
+
+def get_conversation_history(conversation_id, limit=10):
+    """Get recent conversation history"""
+    db = get_db()
+    messages = db.execute('''
+        SELECT role, content, created_at 
+        FROM chat_messages 
+        WHERE conversation_id = ? 
+        ORDER BY created_at ASC 
+        LIMIT ?
+    ''', (conversation_id, limit)).fetchall()
+    return messages
 
 @app.teardown_appcontext
 def close_db(exception):
@@ -125,6 +194,47 @@ def init_db():
             )
             """
         )
+
+        # Chat tables for AI assistant
+        db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS chat_conversations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                session_id TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id)
+            )
+            """
+        )
+
+        db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS chat_messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                conversation_id INTEGER,
+                role TEXT,
+                content TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (conversation_id) REFERENCES chat_conversations(id)
+            )
+            """
+        )
+
+        db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS chat_recommendations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                conversation_id INTEGER,
+                product_id INTEGER,
+                reason TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (conversation_id) REFERENCES chat_conversations(id),
+                FOREIGN KEY (product_id) REFERENCES products(id)
+            )
+            """
+        )
+        
         db.commit()
         print("Database initialized successfully")
     except sqlite3.Error as e:
@@ -733,5 +843,107 @@ def profile():
     cart_items = get_cart_items()
     return render_template('profile.html', cart_items=cart_items)
 
+# --- Chat Routes ---
+@app.route('/chat', methods=['POST'])
+@login_required
+def chat_message():
+    """Handle chat messages and return AI response"""
+    user_message = request.json.get('message', '').strip()
+    if not user_message:
+        return jsonify({'error': 'Message is required'}), 400
+    
+    try:
+        # Get or create conversation
+        conversation_id = get_or_create_conversation()
+        if not conversation_id:
+            return jsonify({'error': 'Failed to create conversation'}), 500
+        
+        # Save user message
+        save_message(conversation_id, 'user', user_message)
+        
+        # Get conversation history for context
+        history = get_conversation_history(conversation_id, limit=5)
+        
+        # Get product catalog for AI context
+        products = get_products_for_ai()
+        product_context = json.dumps(products, indent=2)
+        
+        # Build AI prompt with context
+        system_prompt = f"""
+You are a helpful guitar store assistant. You have access to the following product catalog:
+
+{product_context}
+
+Your role is to:
+1. Help customers find the right guitar equipment based on their needs
+2. Provide honest recommendations considering skill level, budget, and music preferences
+3. Answer questions about products in the catalog
+4. Suggest alternatives if requested items are out of stock
+5. Be friendly, knowledgeable, and helpful
+
+When recommending products, always:
+- Consider the customer's skill level (beginner, intermediate, advanced)
+- Respect their budget constraints
+- Ask clarifying questions if needed
+- Provide specific product names from the catalog
+- Mention the price and key features
+
+If a customer asks about products not in the catalog, politely explain you can only recommend from the current inventory.
+"""
+
+        # Build conversation context
+        conversation_context = system_prompt + "\n\nRecent conversation:\n"
+        for msg in history:
+            conversation_context += f"{msg['role']}: {msg['content']}\n"
+        conversation_context += f"user: {user_message}\nassistant: "
+
+        # Get AI response
+        try:
+            response = gemini_model.generate_content(conversation_context)
+            ai_response = response.text
+        except Exception as e:
+            print(f"Gemini API error: {e}")
+            ai_response = "I'm having trouble connecting right now. Please try again in a moment."
+        
+        # Save AI response
+        save_message(conversation_id, 'assistant', ai_response)
+        
+        return jsonify({
+            'response': ai_response,
+            'conversation_id': conversation_id
+        })
+        
+    except Exception as e:
+        print(f"Chat error: {e}")
+        return jsonify({'error': 'An error occurred processing your message'}), 500
+
+@app.route('/chat/history', methods=['GET'])
+@login_required
+def chat_history():
+    """Get conversation history"""
+    conversation_id = request.args.get('conversation_id')
+    if not conversation_id:
+        return jsonify({'error': 'Conversation ID required'}), 400
+    
+    try:
+        messages = get_conversation_history(int(conversation_id), limit=20)
+        return jsonify({'messages': [dict(msg) for msg in messages]})
+    except Exception as e:
+        print(f"History error: {e}")
+        return jsonify({'error': 'Failed to load conversation history'}), 500
+
+@app.route('/chat/new', methods=['POST'])
+@login_required
+def new_conversation():
+    """Start a new conversation"""
+    try:
+        conversation_id = get_or_create_conversation()
+        if conversation_id:
+            return jsonify({'conversation_id': conversation_id})
+        return jsonify({'error': 'Failed to create conversation'}), 500
+    except Exception as e:
+        print(f"New conversation error: {e}")
+        return jsonify({'error': 'Failed to create conversation'}), 500
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    app.run(host='0.0.0.0', port=5003, debug=True)
