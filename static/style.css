@@ -876,7 +876,62 @@ button {
 }
 
 /* Responsive Design */
+@media (max-width: 1200px) {
+  .dashboard {
+    max-width: 100%;
+    padding: 0 15px 40px;
+  }
+  
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+  }
+}
+
 @media (max-width: 992px) {
+  header {
+    flex-wrap: wrap;
+    padding: 10px 15px;
+    gap: 10px;
+  }
+  
+  .search-container {
+    order: 3;
+    width: 100%;
+    margin-top: 10px;
+  }
+  
+  .search-form {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .search-input {
+    flex: 1;
+  }
+  
+  .user-menu {
+    order: 2;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .welcome-user {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 5px;
+  }
+  
+  .dashboard {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+  }
+  
   .shopping-cart-page .cart-container {
     grid-template-columns: 1fr;
   }
@@ -886,7 +941,142 @@ button {
   }
 }
 
+@media (max-width: 768px) {
+  header {
+    padding: 8px 10px;
+  }
+  
+  .home-icon {
+    font-size: 1.2rem;
+    padding: 8px;
+  }
+  
+  .user-menu {
+    font-size: 0.9rem;
+  }
+  
+  .welcome-user {
+    font-size: 0.85rem;
+  }
+  
+  .cart-button {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+  }
+  
+  .profile-link, .logout-btn {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
+  
+  .auth-menu {
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .auth-link {
+    text-align: center;
+    padding: 8px 12px;
+  }
+  
+  .dashboard {
+    padding: 0 10px 30px;
+  }
+  
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+  }
+  
+  .product-card {
+    border-radius: 12px;
+  }
+  
+  .product-card img {
+    height: 150px;
+  }
+  
+  .product-name {
+    font-size: 1rem;
+  }
+  
+  .product-price {
+    font-size: 1.2rem;
+  }
+  
+  .view-details-btn {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+}
+
 @media (max-width: 576px) {
+  header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  
+  .home-icon {
+    align-self: center;
+    margin-bottom: 5px;
+  }
+  
+  .search-container {
+    order: 2;
+    margin-top: 0;
+  }
+  
+  .search-form {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .search-input {
+    padding: 12px;
+  }
+  
+  .search-button {
+    padding: 12px;
+  }
+  
+  .user-menu, .auth-menu {
+    order: 3;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .welcome-user {
+    width: auto;
+    text-align: center;
+    margin-bottom: 0;
+  }
+  
+  .dashboard {
+    padding: 0 8px 20px;
+  }
+  
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .product-card {
+    border-radius: 8px;
+  }
+  
+  .product-card img {
+    height: 200px;
+  }
+  
+  .product-info {
+    padding: 15px;
+  }
+  
+  .product-actions {
+    padding: 0 15px 15px;
+  }
+  
   .shopping-cart-page .cart-item-card {
     flex-direction: column;
     align-items: flex-start;
@@ -909,7 +1099,391 @@ button {
   }
 }
 
-/* You may proceed with completing the full scoped styles implementation */
+@media (max-width: 480px) {
+  .home-icon {
+    font-size: 1rem;
+    padding: 6px;
+  }
+  
+  .search-input, .search-button {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+  
+  .user-menu, .auth-menu {
+    font-size: 0.8rem;
+  }
+  
+  .cart-button {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+  }
+  
+  .profile-link, .logout-btn, .auth-link {
+    padding: 5px 8px;
+    font-size: 0.8rem;
+  }
+  
+  .welcome-section h1 {
+    font-size: 1.8rem;
+  }
+  
+  .product-card img {
+    height: 180px;
+  }
+  
+  .product-name {
+    font-size: 0.9rem;
+  }
+  
+  .product-price {
+    font-size: 1.1rem;
+  }
+  
+  .view-details-btn {
+    padding: 8px;
+    font-size: 0.85rem;
+  }
+  
+  .auth-container {
+    padding: 10px;
+  }
+  
+  .auth-card {
+    padding: 30px 20px;
+  }
+  
+  .auth-card h1 {
+    font-size: 24px;
+  }
+  
+  /* Search page responsive styles */
+  .category-select {
+    width: 100%;
+    margin: 0 0 10px 0;
+  }
+  
+  .sort-options {
+    flex-direction: column;
+    gap: 10px;
+    padding: 15px;
+  }
+  
+  .sort-option {
+    width: 100%;
+    text-align: center;
+    padding: 12px;
+  }
+}
+
+/* Product Detail Page Responsive Styles */
+@media (max-width: 992px) {
+  .product-detail > div {
+    grid-template-columns: 1fr !important;
+    gap: 30px !important;
+  }
+  
+  .product-gallery {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .product-detail {
+    padding: 20px !important;
+  }
+  
+  .product-detail > div {
+    gap: 25px !important;
+    padding: 20px !important;
+  }
+  
+  .product-info h1 {
+    font-size: 1.8rem !important;
+  }
+  
+  .product-price {
+    font-size: 1.6rem !important;
+  }
+  
+  .video-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .product-detail > div {
+    padding: 15px !important;
+    gap: 20px !important;
+  }
+  
+  .product-info h1 {
+    font-size: 1.6rem !important;
+  }
+  
+  .product-price {
+    font-size: 1.4rem !important;
+  }
+  
+  .product-short-desc {
+    font-size: 1rem !important;
+  }
+  
+  .add-to-cart {
+    padding: 14px !important;
+    font-size: 1rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-info h1 {
+    font-size: 1.5rem !important;
+  }
+  
+  .product-price {
+    font-size: 1.3rem !important;
+  }
+  
+  .product-gallery img {
+    padding: 15px !important;
+  }
+  
+  .add-to-cart {
+    padding: 12px !important;
+    font-size: 0.95rem !important;
+  }
+}
+
+/* Profile Page Responsive Styles */
+@media (max-width: 992px) {
+  .profile-section {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .profile-header {
+    text-align: center;
+  }
+  
+  .profile-stats {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .welcome-section {
+    padding: 30px 20px;
+  }
+  
+  .profile-header {
+    padding: 20px;
+  }
+  
+  .profile-header h1 {
+    font-size: 2rem;
+  }
+  
+  .profile-stats {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .stat-card {
+    width: 100%;
+  }
+  
+  .profile-section {
+    padding: 20px;
+  }
+  
+  .card {
+    padding: 20px;
+  }
+  
+  .card h3 {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .welcome-section {
+    padding: 20px 15px;
+  }
+  
+  .welcome-section h1 {
+    font-size: 1.8rem;
+  }
+  
+  .profile-header {
+    padding: 15px;
+  }
+  
+  .profile-header h1 {
+    font-size: 1.6rem;
+  }
+  
+  .profile-header p {
+    font-size: 0.95rem;
+  }
+  
+  .stat-card {
+    padding: 15px;
+  }
+  
+  .stat-number {
+    font-size: 1.8rem;
+  }
+  
+  .profile-section {
+    padding: 15px;
+  }
+  
+  .card {
+    padding: 15px;
+  }
+  
+  .card h3 {
+    font-size: 1.1rem;
+  }
+  
+  .card p {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-section h1 {
+    font-size: 1.6rem;
+  }
+  
+  .profile-header h1 {
+    font-size: 1.4rem;
+  }
+  
+  .stat-number {
+    font-size: 1.6rem;
+  }
+  
+  .stat-label {
+    font-size: 0.85rem;
+  }
+}
+
+/* Home Page Responsive Styles */
+@media (max-width: 992px) {
+  .welcome-section {
+    padding: 40px 20px;
+  }
+  
+  .welcome-section h1 {
+    font-size: 2.5rem;
+  }
+  
+  .dashboard {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .card {
+    padding: 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .welcome-section {
+    padding: 30px 20px;
+  }
+  
+  .welcome-section h1 {
+    font-size: 2.2rem;
+  }
+  
+  .welcome-section p {
+    font-size: 1.1rem;
+  }
+  
+  .dashboard {
+    padding: 0 15px 40px;
+  }
+  
+  .card {
+    padding: 25px;
+  }
+  
+  .card h2 {
+    font-size: 1.8rem;
+  }
+  
+  .card p {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .welcome-section {
+    padding: 25px 15px;
+  }
+  
+  .welcome-section h1 {
+    font-size: 2rem;
+  }
+  
+  .welcome-section p {
+    font-size: 1rem;
+  }
+  
+  .dashboard {
+    padding: 0 10px 30px;
+  }
+  
+  .card {
+    padding: 20px;
+    border-radius: 12px;
+  }
+  
+  .card h2 {
+    font-size: 1.6rem;
+  }
+  
+  .card p {
+    font-size: 0.95rem;
+  }
+  
+  .clickable-card {
+    transition: transform 0.2s ease;
+  }
+  
+  .clickable-card:hover {
+    transform: translateY(-2px);
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-section {
+    padding: 20px 10px;
+  }
+  
+  .welcome-section h1 {
+    font-size: 1.8rem;
+  }
+  
+  .welcome-section p {
+    font-size: 0.95rem;
+  }
+  
+  .card {
+    padding: 15px;
+  }
+  
+  .card h2 {
+    font-size: 1.4rem;
+  }
+  
+  .card p {
+    font-size: 0.9rem;
+  }
+}
 
 /* Legacy styles removed or updated */
 
