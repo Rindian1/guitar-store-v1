@@ -739,11 +739,5 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
-@app.route('/profile')
-@login_required
-def profile():
-    cart_items = get_cart_items()
-    return render_template('profile.html', cart_items=cart_items)
-
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)

@@ -33,6 +33,15 @@ header {
   font-size: 24px;
   text-decoration: none;
   color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-img {
+  height: 30px;
+  width: auto;
+  object-fit: contain;
 }
 
 .menu-icon {
@@ -127,7 +136,7 @@ header {
 }
 
 .cart-count {
-  background-color: #eb232a;
+  background-color: #d86f45;
   color: white;
   font-size: 12px;
   font-weight: bold;
@@ -328,7 +337,7 @@ button {
 
 .homepage .home-icon {
   background-color: white;
-  padding: 12px 18px;
+  padding: 12px;
   border-radius: 50%;
   cursor: pointer;
   font-size: 26px;
@@ -339,6 +348,14 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 30px;
+  height: 30px;
+}
+
+.homepage .logo-img {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
 }
 
 .homepage .home-icon:hover {
@@ -602,17 +619,6 @@ button {
   background: #c1343f;
   box-shadow: 0 8px 18px rgba(160, 44, 66, 0.7);
   transform: translateY(-3px);
-}
-
-/* Account Actions card - smaller size */
-.homepage .card:has(.account-actions) {
-  min-height: auto;
-  padding: 20px;
-}
-
-.homepage .card:has(.account-actions) h2 {
-  font-size: 1.5rem;
-  margin-bottom: 16px;
 }
 
 /* Improved smooth transitions */
