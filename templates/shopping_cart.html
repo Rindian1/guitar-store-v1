@@ -12,6 +12,12 @@
             <div class="cart-container">
                 <!-- Left side: Cart items -->
                 <div class="cart-items-section" role="list" aria-label="Shopping Cart Items List">
+                    <!-- Column Headers -->
+                    <div class="cart-headers">
+                        <div class="header-item">Item</div>
+                        <div class="header-cost">Cost</div>
+                    </div>
+                    
                     {% for item in cart_items %}
                         <div class="cart-item-card" role="listitem" aria-label="Cart item {{ item.name }}">
                             <div class="cart-item-left">
