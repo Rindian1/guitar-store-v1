@@ -61,17 +61,18 @@ header {
   color: white;
   text-decoration: none;
   padding: 10px 16px;
-  background: linear-gradient(45deg, #f67280, #f79489);
+  background: #f35868;
   border-radius: 25px;
   transition: all 0.3s ease;
   font-weight: 600;
   font-size: 14px;
   border: none;
   cursor: pointer;
+  display: inline-block;
 }
 
 .profile-link:hover {
-  background: linear-gradient(45deg, #f54754, #f67280);
+  background: #c1343f;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(196, 63, 86, 0.3);
 }
@@ -81,7 +82,7 @@ header {
 }
 
 .logout-btn {
-  background: linear-gradient(45deg, #f67280, #f79489);
+  background: #f35868;
   color: white;
   border: none;
   padding: 10px 16px;
@@ -93,13 +94,13 @@ header {
 }
 
 .logout-btn:hover {
-  background: linear-gradient(45deg, #f54754, #f67280);
+  background: #c1343f;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(196, 63, 86, 0.3);
 }
 
 .cart-button {
-  background: linear-gradient(45deg, #f67280, #f79489);
+  background: #f35868;
   color: white;
   text-decoration: none;
   padding: 10px 16px;
@@ -116,13 +117,13 @@ header {
 }
 
 .cart-button:hover {
-  background: linear-gradient(45deg, #f54754, #f67280);
+  background: #c1343f;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(196, 63, 86, 0.3);
 }
 
 .cart-button.active {
-  background: linear-gradient(45deg, #c44f5f, #d65c6f);
+  background: #c1343f;
 }
 
 .cart-count {
@@ -165,19 +166,19 @@ header {
 }
 
 .login-link {
-  background: linear-gradient(45deg, #d86f45, #e67e50);
+  background: #f35868;
 }
 
 .login-link:hover {
-  background: linear-gradient(45deg, #c55f35, #d86f45);
+  background: #c1343f;
 }
 
 .register-link {
-  background: linear-gradient(45deg, #6c63ff, #7c73ff);
+  background: #f35868;
 }
 
 .register-link:hover {
-  background: linear-gradient(45deg, #5a52d5, #6c63ff);
+  background: #c1343f;
 }
 
 .search-container {
@@ -419,7 +420,7 @@ button {
 
 .homepage .search-button {
   padding: 14px 28px;
-  background: linear-gradient(45deg, #f67280, #f79489);
+  background: #f35868;
   color: white;
   border: none;
   border-radius: 30px;
@@ -430,7 +431,7 @@ button {
 }
 
 .homepage .search-button:hover {
-  background: linear-gradient(45deg, #c43f56, #b73850);
+  background: #c1343f;
   transform: scale(1.05);
   box-shadow: 0 6px 15px rgba(196, 63, 86, 0.6);
 }
@@ -587,7 +588,7 @@ button {
 }
 
 .homepage .card form button {
-  background: linear-gradient(45deg, #d65c6f, #b7374a);
+  background: #f35868;
   color: white;
   border: none;
   border-radius: 30px;
@@ -598,7 +599,7 @@ button {
 }
 
 .homepage .card form button:hover {
-  background: linear-gradient(45deg, #a02c42, #7b323f);
+  background: #c1343f;
   box-shadow: 0 8px 18px rgba(160, 44, 66, 0.7);
   transform: translateY(-3px);
 }
@@ -1027,7 +1028,7 @@ body.menu-open {
 .homepage .add-to-cart {
   width: 100%;
   padding: 12px;
-  background: linear-gradient(45deg, #f67280, #f79489);
+  background: #f35868;
   color: white;
   border: none;
   border-radius: 30px;
@@ -1037,7 +1038,7 @@ body.menu-open {
 }
 
 .homepage .add-to-cart:hover {
-  background: linear-gradient(45deg, #d65c6f, #b7374a);
+  background: #c1343f;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(214, 92, 111, 0.4);
 }
@@ -1065,7 +1066,7 @@ body.menu-open {
 
 .homepage .sort-option:hover,
 .homepage .sort-option.active {
-  background: linear-gradient(45deg, #f67280, #f79489);
+  background: #f35868;
   color: white;
   box-shadow: 0 4px 12px rgba(214, 92, 111, 0.3);
 }
@@ -1360,7 +1361,7 @@ body.menu-open {
 }
 
 .shopping-cart-page .btn-checkout-full {
-  background: linear-gradient(45deg, #d65c6f, #b7374a);
+  background: #f35868;
   color: white;
   opacity: 0.7;
   cursor: not-allowed;
@@ -1404,7 +1405,7 @@ body.menu-open {
 
 .shopping-cart-page .btn-start-shopping {
   display: inline-block;
-  background: linear-gradient(45deg, #d65c6f, #b7374a);
+  background: #f35868;
   color: white;
   padding: 16px 40px;
   border-radius: 30px;
@@ -2134,13 +2135,14 @@ body.menu-open {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #f35868;
   color: white;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  background: #c1343f;
+  box-shadow: 0 8px 25px rgba(193, 52, 63, 0.3);
 }
 
 .btn-secondary {
