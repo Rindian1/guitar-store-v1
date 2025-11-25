@@ -45,6 +45,18 @@ def get_cart_items():
     db = get_db()
     return db.execute('SELECT id, name, price FROM cart_items WHERE user_id = ? ORDER BY id DESC', (current_user.id,)).fetchall()
 
+def get_categories():
+    """Helper function to get all product categories"""
+    db = get_db()
+    return db.execute('SELECT DISTINCT category FROM products ORDER BY category').fetchall()
+
+@app.context_processor
+def inject_globals():
+    """Make global variables available to all templates"""
+    return {
+        'categories': get_categories()
+    }
+
 @app.teardown_appcontext
 def close_db(exception):
     db = getattr(g, '_db', None)

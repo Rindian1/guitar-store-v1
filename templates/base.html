@@ -12,8 +12,20 @@
         <div class="search-container">
             {% block search_form %}
             <form method="get" action="{{ url_for('search') }}" class="search-form">
-                <input type="text" name="q" class="search-input" placeholder="Search guitars...">
-                <button type="submit" class="search-button">Search</button>
+                <div class="search-input-wrapper">
+                    <button type="submit" class="search-icon-btn">
+                        <img src="{{ url_for('static', filename='Images/Search_Icon.png') }}" alt="Search" class="search-icon">
+                    </button>
+                    <input type="text" name="q" class="search-input" placeholder="Search guitars...">
+                    <select name="category" class="search-category-select">
+                        <option value="">All Categories</option>
+                        {% if categories %}
+                            {% for cat in categories %}
+                            <option value="{{ cat['category'] }}" {% if selected_category == cat['category'].lower() %}selected{% endif %}>{{ cat['category'] }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
             </form>
             {% endblock %}
         </div>
