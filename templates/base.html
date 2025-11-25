@@ -6,7 +6,7 @@
     <title>{% block title %}Guitar Store{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body class="homepage">
+<body class="homepage {% block body_class %}{% endblock %}">
     <header>
         <a href="{{ url_for('home') }}" class="home-icon">🏠</a>
         <div class="search-container">
@@ -33,7 +33,6 @@
             </div>
         {% else %}
             <div class="auth-menu">
-                <a href="{{ url_for('login') }}" class="auth-link login-link">Login</a>
                 <a href="{{ url_for('register') }}" class="auth-link register-link">Register</a>
             </div>
         {% endif %}

@@ -2,6 +2,8 @@
 
 {% block title %}Shopping Cart{% endblock %}
 
+{% block body_class %}shopping-cart-page{% endblock %}
+
 {% block content %}
     <main class="cart-main" role="main" aria-label="Shopping Cart Main Content">
         <h1 class="cart-title">Shopping Cart</h1>
@@ -18,12 +20,12 @@
                                 </div>
                                 <div class="cart-item-info">
                                     <h3 class="cart-item-name">{{ item.name }}</h3>
-                                    <div class="quantity-controls" style="display: flex; align-items: center; gap: 10px; margin: 10px 0;">
-                                        <span style="font-weight: 600; color: #333;">Qty:</span>
-                                        <div style="display: flex; align-items: center; border: 2px solid #f67280; border-radius: 20px; overflow: hidden;">
-                                            <button type="button" class="qty-decrease" data-item-id="{{ item.id }}" style="background: #f67280; color: white; border: none; width: 30px; height: 30px; font-size: 14px; cursor: pointer;">−</button>
-                                            <input type="number" id="qty-{{ item.id }}" value="{{ item.quantity or 1 }}" min="1" style="width: 40px; text-align: center; border: none; font-size: 14px; font-weight: 600;" readonly>
-                                            <button type="button" class="qty-increase" data-item-id="{{ item.id }}" style="background: #f67280; color: white; border: none; width: 30px; height: 30px; font-size: 14px; cursor: pointer;">+</button>
+                                    <div class="quantity-controls">
+                                        <span>Qty:</span>
+                                        <div>
+                                            <button type="button" class="qty-decrease" data-item-id="{{ item.id }}">−</button>
+                                            <input type="number" id="qty-{{ item.id }}" value="{{ item.quantity or 1 }}" min="1" readonly>
+                                            <button type="button" class="qty-increase" data-item-id="{{ item.id }}">+</button>
                                         </div>
                                     </div>
                                     <form method="post" action="{{ url_for('remove_item', item_id=item.id) }}" class="remove-form" onsubmit="return confirm('Are you sure you want to remove this item?');">
@@ -35,7 +37,7 @@
                             </div>
                             <div class="cart-item-price">
                                 <div class="item-price-per-unit">${{ '%.2f'|format(item.price or 0) }} each</div>
-                                <div class="item-total" style="font-weight: 700; font-size: 1.1rem; color: #b7374a;">
+                                <div class="item-total">
                                     ${{ '%.2f'|format((item.price or 0) * (item.quantity or 1)) }}
                                 </div>
                             </div>
