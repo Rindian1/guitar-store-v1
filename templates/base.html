@@ -8,7 +8,17 @@
 </head>
 <body class="homepage {% block body_class %}{% endblock %}">
     <header>
-        <a href="{{ url_for('home') }}" class="home-icon">🏠</a>
+        <!-- Left side: Home and Hamburger icons together -->
+        <div class="header-left">
+            <a href="{{ url_for('home') }}" class="home-icon">🏠</a>
+            <button class="hamburger-btn" aria-label="Open navigation menu" onclick="toggleMobileMenu()">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+        </div>
+        
+        <!-- Search container (visible on all devices) -->
         <div class="search-container">
             {% block search_form %}
             <form method="get" action="{{ url_for('search') }}" class="search-form">
@@ -29,6 +39,8 @@
             </form>
             {% endblock %}
         </div>
+        
+        <!-- Desktop user menu (hidden on mobile) -->
         {% if current_user.is_authenticated %}
             <div class="user-menu">
                 <span class="welcome-user">Welcome, {{ current_user.username }}!</span>
@@ -45,14 +57,177 @@
             </div>
         {% else %}
             <div class="auth-menu">
+                <a href="{{ url_for('login') }}" class="auth-link login-link">Login</a>
                 <a href="{{ url_for('register') }}" class="auth-link register-link">Register</a>
             </div>
         {% endif %}
     </header>
-
+    
+    <!-- Mobile navigation drawer (hidden by default) -->
+    <div class="mobile-nav-drawer" id="mobileNavDrawer">
+        <div class="mobile-nav-content">
+            <!-- Close button in top-right -->
+            <button class="close-nav-btn" aria-label="Close menu" onclick="toggleMobileMenu()">×</button>
+            
+            <!-- User welcome message (if authenticated) -->
+            {% if current_user.is_authenticated %}
+                <div class="mobile-user-header">
+                    <span class="mobile-welcome">Welcome, {{ current_user.username }}!</span>
+                </div>
+            {% endif %}
+            
+            <!-- Navigation links -->
+            <nav class="mobile-nav-links">
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('shopping_cart') }}" class="mobile-nav-link">
+                        🛒 Cart
+                        {% if cart_items and cart_items|length > 0 %}
+                            <span class="mobile-cart-count">{{ cart_items|length }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="{{ url_for('profile') }}" class="mobile-nav-link">Profile</a>
+                    <a href="{{ url_for('home') }}" class="mobile-nav-link">Home</a>
+                    <form method="post" action="{{ url_for('logout') }}" class="mobile-logout-form">
+                        <button type="submit" class="mobile-nav-link logout-btn">Logout</button>
+                    </form>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="mobile-nav-link">Login</a>
+                    <a href="{{ url_for('register') }}" class="mobile-nav-link">Register</a>
+                    <a href="{{ url_for('home') }}" class="mobile-nav-link">Home</a>
+                {% endif %}
+            </nav>
+            
+            <!-- Categories section -->
+            <div class="mobile-nav-footer">
+                <div class="mobile-nav-section">
+                    <h3>Categories</h3>
+                    {% if categories %}
+                        {% for cat in categories %}
+                            <a href="{{ url_for('search', category=cat['category']) }}" class="mobile-category-link">
+                                {{ cat['category'] }}
+                            </a>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Background overlay (hidden by default) -->
+    <div class="mobile-nav-overlay" id="mobileNavOverlay" onclick="toggleMobileMenu()"></div>
+    
     {% block content %}{% endblock %}
 
     <script>
+    // Hamburger menu functionality
+    function toggleMobileMenu() {
+        const drawer = document.getElementById('mobileNavDrawer');
+        const overlay = document.getElementById('mobileNavOverlay');
+        const hamburgerBtn = document.querySelector('.hamburger-btn');
+        const body = document.body;
+        
+        // Toggle active classes
+        drawer.classList.toggle('active');
+        overlay.classList.toggle('active');
+        hamburgerBtn.classList.toggle('active');
+        
+        // Toggle body scroll lock using CSS class
+        const isOpen = drawer.classList.contains('active');
+        if (isOpen) {
+            body.classList.add('menu-open');
+            body.setAttribute('aria-hidden', 'true');
+        } else {
+            body.classList.remove('menu-open');
+            body.removeAttribute('aria-hidden');
+        }
+        
+        // Focus management
+        if (isOpen) {
+            // Move focus to close button when menu opens
+            setTimeout(() => {
+                document.querySelector('.close-nav-btn').focus();
+            }, 100);
+            
+            // Announce to screen readers
+            announceToScreenReader('Navigation menu opened');
+        } else {
+            // Return focus to hamburger button when menu closes
+            hamburgerBtn.focus();
+            
+            // Announce to screen readers
+            announceToScreenReader('Navigation menu closed');
+        }
+    }
+
+    // Close menu when pressing Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const drawer = document.getElementById('mobileNavDrawer');
+            if (drawer.classList.contains('active')) {
+                toggleMobileMenu();
+            }
+        }
+    });
+
+    // Close menu when window is resized beyond mobile breakpoint
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() {
+            if (window.innerWidth > 768) {
+                const drawer = document.getElementById('mobileNavDrawer');
+                const overlay = document.getElementById('mobileNavOverlay');
+                const hamburgerBtn = document.querySelector('.hamburger-btn');
+                const body = document.body;
+                
+                if (drawer.classList.contains('active')) {
+                    // Close menu and clean up
+                    drawer.classList.remove('active');
+                    overlay.classList.remove('active');
+                    hamburgerBtn.classList.remove('active');
+                    body.classList.remove('menu-open');
+                    body.removeAttribute('aria-hidden');
+                }
+            }
+        }, 250);
+    });
+
+    // Screen reader announcement helper
+    function announceToScreenReader(message) {
+        const announcement = document.createElement('div');
+        announcement.setAttribute('aria-live', 'polite');
+        announcement.setAttribute('aria-atomic', 'true');
+        announcement.className = 'sr-only';
+        announcement.textContent = message;
+        
+        document.body.appendChild(announcement);
+        
+        setTimeout(() => {
+            document.body.removeChild(announcement);
+        }, 1000);
+    }
+
+    // Add screen reader only styles if not already present
+    if (!document.querySelector('style[data-sr-only]')) {
+        const style = document.createElement('style');
+        style.setAttribute('data-sr-only', '');
+        style.textContent = `
+            .sr-only {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                white-space: nowrap;
+                border: 0;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // Existing clickable card functionality
     document.addEventListener('DOMContentLoaded', function () {
         const clickable = document.querySelector('.clickable-card');
         if (clickable) {
@@ -62,9 +237,16 @@
                 if (tag === 'button' || tag === 'a' || e.target.closest('form')) {
                     return;
                 }
-                const href = this.getAttribute('data-href');
+                // Navigate based on the data attribute
+                const href = clickable.dataset.href;
+                const productId = clickable.dataset.productId;
+                
                 if (href) {
+                    // For shopping cart card and other navigation cards
                     window.location.href = href;
+                } else if (productId) {
+                    // For product cards
+                    window.location.href = `/product/${productId}`;
                 }
             });
         }
