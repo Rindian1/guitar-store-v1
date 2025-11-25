@@ -1,42 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shopping Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body class="homepage">
-    <header>
-        <a href="{{ url_for('home') }}" class="home-icon">🏠</a>
-        <div class="search-container">
-            <form method="get" action="{{ url_for('search') }}" class="search-form">
-                <input type="text" name="q" class="search-input" placeholder="Search guitars... (eg. Fender Stratocaster)">
-                <button type="submit" class="search-button">Search</button>
-            </form>
-        </div>
-        {% if current_user.is_authenticated %}
-            <div class="user-menu">
-                <span class="welcome-user">Welcome, {{ current_user.username }}!</span>
-                <a href="{{ url_for('shopping_cart') }}" class="cart-button" aria-label="Shopping Cart">
-                    🛒 Cart
-                    {% if cart_items and cart_items|length > 0 %}
-                        <span class="cart-count">{{ cart_items|length }}</span>
-                    {% endif %}
-                </a>
-                <a href="{{ url_for('profile') }}" class="profile-link">Profile</a>
-                <form method="post" action="{{ url_for('logout') }}" class="logout-form-inline">
-                    <button type="submit" class="logout-btn">Logout</button>
-                </form>
-            </div>
-        {% else %}
-            <div class="auth-menu">
-                <a href="{{ url_for('login') }}" class="auth-link login-link">Login</a>
-                <a href="{{ url_for('register') }}" class="auth-link register-link">Register</a>
-            </div>
-        {% endif %}
-    </header>
+{% extends "base.html" %}
 
+{% block title %}Shopping Dashboard{% endblock %}
+
+{% block content %}
     <section class="welcome-section">
         {% if current_user.is_authenticated %}
             <h1>Welcome {{ current_user.username }}!</h1>
@@ -111,24 +77,4 @@
             </div>
         </div>
     </main>
-
-    <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const clickable = document.querySelector('.clickable-card');
-        if (clickable) {
-            clickable.addEventListener('click', function (e) {
-                // If the click originated from a form control or link, do nothing
-                const tag = e.target.tagName.toLowerCase();
-                if (tag === 'button' || tag === 'a' || e.target.closest('form')) {
-                    return;
-                }
-                const href = this.getAttribute('data-href');
-                if (href) {
-                    window.location.href = href;
-                }
-            });
-        }
-    });
-    </script>
-</body>
-</html>
+{% endblock %}

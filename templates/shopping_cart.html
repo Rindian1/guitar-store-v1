@@ -1,36 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shopping Cart</title> 
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head> 
+{% extends "base.html" %}
 
-<body class="homepage shopping-cart-page">
-    <header>
-        <a href="{{ url_for('index') }}" class="home-icon" aria-label="Home">🏠</a>
-        <div class="search-container">
-            <form method="get" action="{{ url_for('search') }}" class="search-form" role="search" aria-label="Site Search">
-                <input type="search" name="q" class="search-input" placeholder="Browse" aria-label="Search products" />
-                <button type="submit" class="search-button btn btn-primary">Search</button>
-            </form>
-        </div>
-        <div class="user-menu">
-            <span class="welcome-user">Welcome, {{ current_user.username }}!</span>
-            <a href="{{ url_for('shopping_cart') }}" class="cart-button active" aria-label="Shopping Cart">
-                🛒 Cart
-                {% if cart_items and cart_items|length > 0 %}
-                    <span class="cart-count">{{ cart_items|length }}</span>
-                {% endif %}
-            </a>
-            <a href="{{ url_for('profile') }}" class="profile-link">Profile</a>
-            <form method="post" action="{{ url_for('logout') }}" class="logout-form-inline">
-                <button type="submit" class="logout-btn">Logout</button>
-            </form>
-        </div>
-    </header>
+{% block title %}Shopping Cart{% endblock %}
 
+{% block content %}
     <main class="cart-main" role="main" aria-label="Shopping Cart Main Content">
         <h1 class="cart-title">Shopping Cart</h1>
 
@@ -181,5 +153,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-</body>
-</html>
+{% endblock %}
