@@ -637,6 +637,43 @@ def add_to_cart():
         db.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/product/<int:product_id>/stock', methods=['PUT'])
+@login_required
+def update_product_stock(product_id: int):
+    """Update product stock quantity (admin function)"""
+    data = request.get_json()
+    if not data or 'stock' not in data:
+        return jsonify({'success': False, 'error': 'Stock quantity is required'}), 400
+    
+    try:
+        new_stock = int(data['stock'])
+        if new_stock < 0:
+            return jsonify({'success': False, 'error': 'Stock cannot be negative'}), 400
+    except (ValueError, TypeError):
+        return jsonify({'success': False, 'error': 'Invalid stock quantity'}), 400
+    
+    db = get_db()
+    try:
+        # Check if product exists
+        product = db.execute('SELECT id, name, stock FROM products WHERE id = ?', (product_id,)).fetchone()
+        if not product:
+            return jsonify({'success': False, 'error': 'Product not found'}), 404
+        
+        # Update stock
+        db.execute('UPDATE products SET stock = ? WHERE id = ?', (new_stock, product_id))
+        db.commit()
+        
+        return jsonify({
+            'success': True, 
+            'message': f'Stock updated for {product["name"]}',
+            'old_stock': product['stock'],
+            'new_stock': new_stock
+        })
+        
+    except Exception as e:
+        db.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 # --- Authentication Routes ---
 @app.route('/register', methods=['GET', 'POST'])
 def register():
