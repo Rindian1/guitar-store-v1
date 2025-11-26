@@ -70,7 +70,7 @@ header {
   color: white;
   text-decoration: none;
   padding: 10px 16px;
-  background: #f35868;
+  background: transparent;
   border-radius: 25px;
   transition: all 0.3s ease;
   font-weight: 600;
@@ -81,9 +81,9 @@ header {
 }
 
 .profile-link:hover {
-  background: #c1343f;
+  background: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(196, 63, 86, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
 }
 
 .logout-form-inline {
@@ -91,7 +91,7 @@ header {
 }
 
 .logout-btn {
-  background: #f35868;
+  background: transparent;
   color: white;
   border: none;
   padding: 10px 16px;
@@ -103,13 +103,13 @@ header {
 }
 
 .logout-btn:hover {
-  background: #c1343f;
+  background: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(196, 63, 86, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
 }
 
 .cart-button {
-  background: #f35868;
+  background: transparent;
   color: white;
   text-decoration: none;
   padding: 10px 16px;
@@ -126,9 +126,9 @@ header {
 }
 
 .cart-button:hover {
-  background: #c1343f;
+  background: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(196, 63, 86, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
 }
 
 .cart-button.active {
@@ -160,6 +160,7 @@ header {
   color: white;
   text-decoration: none;
   padding: 10px 16px;
+  background: transparent;
   border-radius: 25px;
   transition: all 0.3s ease;
   font-weight: 600;
@@ -170,24 +171,25 @@ header {
 }
 
 .auth-link:hover {
+  background: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(196, 63, 86, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
 }
 
 .login-link {
-  background: #f35868;
+  background: transparent;
 }
 
 .login-link:hover {
-  background: #c1343f;
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .register-link {
-  background: #f35868;
+  background: transparent;
 }
 
 .register-link:hover {
-  background: #c1343f;
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .search-container {
@@ -328,8 +330,8 @@ button {
   align-items: center;
   gap: 25px;
   box-shadow: 0 4px 12px rgba(246, 116, 128, 0.5);
-  border-bottom-left-radius: 16px;
-  border-bottom-right-radius: 16px;
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -471,11 +473,10 @@ button {
 
 .homepage .welcome-section {
   padding: 50px 20px;
-  background: linear-gradient(120deg, #ffffff, #ffeeef);
+  background: #f5f5f5;
   border-radius: 16px;
   max-width: 1200px;
   margin: 30px auto 40px auto;
-  box-shadow: 0 4px 20px rgba(246, 116, 128, 0.15);
   text-align: center;
 }
 
@@ -537,6 +538,12 @@ button {
   border-bottom: 1px solid #f9e9e9;
   font-weight: 500;
   color: #444;
+}
+
+.homepage .item-row span:last-child,
+.homepage .item-row a.item-link {
+  text-align: right;
+  margin-left: auto;
 }
 
 .homepage .item-row:last-child {
@@ -861,7 +868,7 @@ body.menu-open {
     
     .search-container {
         flex: 1;
-        max-width: 400px;
+        max-width: 800px;
     }
     
     .search-input {
