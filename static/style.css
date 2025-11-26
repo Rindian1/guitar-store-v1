@@ -2314,3 +2314,80 @@ body.menu-open {
     font-size: 24px;
   }
 }
+
+/* Search Authentication Styles */
+.search-container {
+  position: relative;
+}
+
+.search-disabled {
+  position: relative;
+  opacity: 0.6;
+  filter: blur(1px);
+  pointer-events: none;
+}
+
+.search-login-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: auto;
+}
+
+.search-login-prompt {
+  color: white;
+  text-decoration: none;
+  background: #f35868;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.search-login-prompt:hover {
+  background: #c1343f;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.search-disabled .search-input,
+.search-disabled .search-category-select {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+}
+
+.search-disabled .search-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.search-disabled .search-icon {
+  opacity: 0.5;
+  filter: grayscale(100%);
+}
+
+.search-disabled .search-icon-btn {
+  cursor: not-allowed;
+}
+
+/* Mobile adjustments for disabled search */
+@media (max-width: 768px) {
+  .search-login-prompt {
+    font-size: 12px;
+    padding: 8px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-login-prompt {
+    font-size: 11px;
+    padding: 6px 12px;
+  }
+}

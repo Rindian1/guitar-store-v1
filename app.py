@@ -2,6 +2,7 @@ from flask import Flask
 from flask import render_template
 from flask import request, redirect, url_for
 from flask import abort
+from flask import flash
 import sqlite3
 import os
 from flask import g 
@@ -410,6 +411,7 @@ def remove_item(item_id: int):
     return redirect(url_for('home'))
 
 @app.route('/search')
+@login_required
 def search():
     query = (request.args.get('q') or '').strip()
     category = (request.args.get('category') or '').strip().lower()
@@ -659,8 +661,11 @@ def register():
         # Validate email
         if not email:
             errors.append('Email is required')
-        elif not validate_email(email):
-            errors.append('Please enter a valid email address')
+        else:
+            try:
+                validate_email(email)
+            except EmailNotValidError as e:
+                errors.append('Please enter a valid email address')
         
         # Validate password
         if not password:
@@ -680,26 +685,42 @@ def register():
                 errors.append('Username already exists')
         
         # Check if email already exists
-        if email and validate_email(email):
-            db = get_db()
-            existing_email = db.execute('SELECT id FROM users WHERE email = ?', (email,)).fetchone()
-            if existing_email:
-                errors.append('Email already registered')
+        if email and not any('Email' in error for error in errors):  # Only check if email is valid
+            try:
+                db = get_db()
+                existing_email = db.execute('SELECT id FROM users WHERE email = ?', (email,)).fetchone()
+                if existing_email:
+                    errors.append('Email already registered')
+            except Exception as e:
+                errors.append('Unable to verify email availability')
         
         if errors:
             return render_template('register.html', errors=errors, username=username, email=email)
         
         # Create new user
-        db = get_db()
-        password_hash = generate_password_hash(password)
-        db.execute(
-            'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
-            (username, email, password_hash)
-        )
-        db.commit()
-        
-        flask('Registration successful! Please log in.')
-        return redirect(url_for('login'))
+        try:
+            db = get_db()
+            password_hash = generate_password_hash(password)
+            db.execute(
+                'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
+                (username, email, password_hash)
+            )
+            db.commit()
+            flash('Registration successful! Please log in.')
+            return redirect(url_for('login'))
+        except sqlite3.IntegrityError as e:
+            db.rollback()
+            if 'UNIQUE constraint failed: users.username' in str(e):
+                errors.append('Username already exists')
+            elif 'UNIQUE constraint failed: users.email' in str(e):
+                errors.append('Email already registered')
+            else:
+                errors.append('Registration failed. Please try again.')
+            return render_template('register.html', errors=errors, username=username, email=email)
+        except Exception as e:
+            db.rollback()
+            flash('Registration failed. Please try again.')
+            return render_template('register.html', errors=['An unexpected error occurred'], username=username, email=email)
     
     return render_template('register.html')
 

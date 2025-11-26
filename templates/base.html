@@ -22,24 +22,46 @@
         
         <!-- Search container (visible on all devices) -->
         <div class="search-container">
-            {% block search_form %}
-            <form method="get" action="{{ url_for('search') }}" class="search-form">
-                <div class="search-input-wrapper">
-                    <button type="submit" class="search-icon-btn">
-                        <img src="{{ url_for('static', filename='Images/Search_Icon.png') }}" alt="Search" class="search-icon">
-                    </button>
-                    <input type="text" name="q" class="search-input" placeholder="Search guitars...">
-                    <select name="category" class="search-category-select">
-                        <option value="">All Categories</option>
-                        {% if categories %}
-                            {% for cat in categories %}
-                            <option value="{{ cat['category'] }}" {% if selected_category == cat['category'].lower() %}selected{% endif %}>{{ cat['category'] }}</option>
-                            {% endfor %}
-                        {% endif %}
-                    </select>
+            {% if current_user.is_authenticated %}
+                {% block search_form %}
+                <form method="get" action="{{ url_for('search') }}" class="search-form">
+                    <div class="search-input-wrapper">
+                        <button type="submit" class="search-icon-btn">
+                            <img src="{{ url_for('static', filename='Images/Search_Icon.png') }}" alt="Search" class="search-icon">
+                        </button>
+                        <input type="text" name="q" class="search-input" placeholder="Search guitars...">
+                        <select name="category" class="search-category-select">
+                            <option value="">All Categories</option>
+                            {% if categories %}
+                                {% for cat in categories %}
+                                <option value="{{ cat['category'] }}" {% if selected_category == cat['category'].lower() %}selected{% endif %}>{{ cat['category'] }}</option>
+                                {% endfor %}
+                            {% endif %}
+                        </select>
+                    </div>
+                </form>
+                {% endblock %}
+            {% else %}
+                <div class="search-form search-disabled">
+                    <div class="search-input-wrapper">
+                        <button type="submit" class="search-icon-btn" disabled>
+                            <img src="{{ url_for('static', filename='Images/Search_Icon.png') }}" alt="Search" class="search-icon">
+                        </button>
+                        <input type="text" class="search-input" placeholder="Search guitars..." disabled>
+                        <select name="category" class="search-category-select" disabled>
+                            <option value="">All Categories</option>
+                            {% if categories %}
+                                {% for cat in categories %}
+                                <option value="{{ cat['category'] }}">{{ cat['category'] }}</option>
+                                {% endfor %}
+                            {% endif %}
+                        </select>
+                    </div>
                 </div>
-            </form>
-            {% endblock %}
+                <div class="search-login-container">
+                    <a href="{{ url_for('login') }}" class="search-login-prompt">Login to search</a>
+                </div>
+            {% endif %}
         </div>
         
         <!-- Desktop user menu (hidden on mobile) -->
