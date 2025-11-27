@@ -620,7 +620,7 @@ def add_to_cart():
             if product['stock'] > 0 and new_quantity <= product['stock']:
                 db.execute('UPDATE cart_items SET quantity = ? WHERE id = ?', (new_quantity, existing_item['id']))
                 db.commit()
-                return jsonify({'success': True, 'message': 'Quantity updated in cart', 'quantity': new_quantity})
+                return jsonify({'success': True, 'message': 'Product added to cart', 'quantity': new_quantity})
             else:
                 return jsonify({'success': False, 'error': 'Insufficient stock available'}), 400
         else:
